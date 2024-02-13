@@ -1,9 +1,11 @@
 # Sample RBAC Dotnet Amazon Cognito
+
 ## Summary
+
 This design pattern describes and implements an OAuth 2.0 authorization code grant flow doing a RBAC based authorization in .NET 8.0 API consuming AWS services with temporary credentials, having **AWS cognito** as the identity provider. It also demonstrates the  OAuth 2.0 flow with postman, providing a seamless developer experience allowing development and debugging AWS cloud API security scenarios.
 
-
 ## Prerequisites
+
 - AWS Account
 - AWS Console
 - .NET framework 8.0
@@ -14,7 +16,9 @@ This design pattern describes and implements an OAuth 2.0 authorization code gra
 - AWS Systems Manager Parameter store
   
 ## Deployment
+
 ### Deployment of Cognito User pool , Identity Pool, Security Policies  Users and Groups and Parameter Store
+
 1. From the root of the project folder Navigate to src\infra\cognito and run the following commands:
 
 ```bash
@@ -22,6 +26,7 @@ cdk bootstrap --all
 
 cdk deploy --all
 ```
+
 The following output will be produced. Save this data for later user
 
 ```bash
@@ -31,14 +36,15 @@ congnitoStack.Authority = Authority
 congnitoStack.IdentityPoolId = identityPoold
 congnitoStack.providerName = providerName
 ```
+
 2. Obtain the client secret in the AWS console:
 2.1. Open AWS console select cognito.
 2.2. Click on User pools on the left select the user pool.
 2.3. Select **App Integrarion**. Scroll down and click on the App Client.
 2.4. Click on **Show Client Secret**. Save value for later use.
 
-
 ### Assign Passwords to users
+
 Assign passwords for the users listuser, reader writeuser created by the cognito deployment passing the poolid from previous output and the password of your choice with the following commands:
 
 Note: the flag —permanent is passed. Use —temporary to allow users to change the password on first login
@@ -55,14 +61,15 @@ poolId --username writeuser 
 --password yourPassword --permanent
 ```
 
-
 ### Create a bucket for testing
+
 ```bash
 aws s3api create-bucket --bucket bucketName --region region
 ```
 
-### PostMan Testing with an OAUTH2.0 Authorization Code Grant Flow.
-An authenticated context is required to debug locally. Authenticate to AWS and from the command propmpt type devenv to launch visucal studio 
+### PostMan Testing with an OAUTH2.0 Authorization Code Grant Flow
+
+An authenticated context is required to debug locally. Authenticate to AWS and from the command propmpt type devenv to launch visucal studio
 
 change the bucketname and region in app settings
 
@@ -104,7 +111,7 @@ change the bucketname and region in app settings
 
 10. OAUTH20_AUTH_URL  value from output cognitoStack.AuthenticationURL
 
-CLIENT_ID value from  output cognitoStack.ClientId 
+CLIENT_ID value from  output cognitoStack.ClientId
 
 CLIENT_SECRET value AWS console
 
@@ -123,3 +130,11 @@ OAUTH20.SCOPES no change
 13. Click at the root of the collection RbacAuthz scroll down this UI on Postman until GetNewAccessToken is visible and click it. Enter writeuser as user and the password click sign in then click proceed then use token.  
 
 12. Click on the WriteData request under root of collection, select Authorization select type and then oauth. On the token drop down expand the available tokens and choose your token. On the **Token Type** and choose Id token.
+
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
