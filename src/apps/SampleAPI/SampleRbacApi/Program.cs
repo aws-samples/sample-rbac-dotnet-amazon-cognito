@@ -74,14 +74,23 @@ builder.Services.AddAuthentication(options =>
 
 });
 
+builder.Services.AddHealthChecks();
+
 app = builder.Build();
+
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.MapControllers();
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHealthChecks("/healthz")
+    .AllowAnonymous();
+app.UsePathBase("/api/app1");
+app.MapGet("/", [AllowAnonymous] () => "Welcome to running ASP.NET Core Minimal API on EKS with Amazon Cognito");
+
 app.Run();
 
 
