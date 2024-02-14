@@ -1,14 +1,12 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
-    "charset": "utf8",
     "declaration": true,
+    "outDir": "build",
     "experimentalDecorators": true,
     "inlineSourceMap": true,
     "inlineSources": true,
-    "lib": [
-      "es2016"
-    ],
+    "lib": ["es2016"],
     "module": "CommonJS",
     "noEmit": false,
     "noEmitOnError": true,
@@ -25,10 +23,6 @@
     "stripInternal": true,
     "target": "ES2017"
   },
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
 }
