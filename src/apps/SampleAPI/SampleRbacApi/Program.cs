@@ -86,9 +86,10 @@ app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/healthz")
+    .AllowAnonymous();
 app.UsePathBase("/api/app1");
-app.MapGet("/", () => "Welcome to running ASP.NET Core Minimal API on AWS Lambda - Function One!");
+app.MapGet("/", [AllowAnonymous] () => "Welcome to running ASP.NET Core Minimal API on EKS with Amazon Cognito");
 
 app.Run();
 
