@@ -1,8 +1,8 @@
 {
-  "name": "cdktest",
+  "name": "security",
   "version": "0.1.0",
   "bin": {
-    "cdktest": "bin/cdktest.js"
+    "cdktest": "bin/security.js"
   },
   "scripts": {
     "build": "tsc",
