@@ -3,7 +3,7 @@ import { Construct } from "constructs";
 import { CognitoStack } from "./cognito";
 import { IamStack } from "./iam";
 
-export class CdktestStack extends cdk.Stack {
+export class SecurityStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -21,11 +21,6 @@ export class CdktestStack extends cdk.Stack {
 
     cognitoStack.addDependency(iamStack);
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdktestQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+  
   }
 }

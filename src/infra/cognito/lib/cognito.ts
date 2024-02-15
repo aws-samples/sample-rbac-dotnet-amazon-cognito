@@ -69,7 +69,7 @@ export class CognitoStack extends cdk.Stack {
       roleArn: listRoleArn,
     });
 
-    listGroup.addDependsOn(listUser);
+    listGroup.addDependency(listUser);
 
     const listAttach = new cognito.CfnUserPoolUserToGroupAttachment(
       this,
@@ -81,7 +81,7 @@ export class CognitoStack extends cdk.Stack {
       }
     );
 
-    listAttach.addDependsOn(listGroup);
+    listAttach.addDependency(listGroup);
 
     //------------
 
@@ -98,7 +98,7 @@ export class CognitoStack extends cdk.Stack {
       roleArn: writeRoleArn,
     });
 
-    writeGroup.addDependsOn(writeUser);
+    writeGroup.addDependency(writeUser);
 
     const writeAttach = new cognito.CfnUserPoolUserToGroupAttachment(
       this,
@@ -110,7 +110,7 @@ export class CognitoStack extends cdk.Stack {
       }
     );
 
-    writeAttach.addDependsOn(writeGroup);
+    writeAttach.addDependency(writeGroup);
 
     const identityPool = new cognito.CfnIdentityPool(this, "IdentityPool", {
       allowUnauthenticatedIdentities: false,
@@ -148,8 +148,8 @@ export class CognitoStack extends cdk.Stack {
         }
       );
 
-    identityPool.addDependsOn(writeAttach);
-    identityPool.addDependsOn(listAttach);
+    identityPool.addDependency(writeAttach);
+    identityPool.addDependency(listAttach);
 
     const authoriry = new StringParameter(this, "authority", {
       stringValue: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
