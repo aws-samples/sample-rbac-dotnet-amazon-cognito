@@ -58,6 +58,36 @@ namespace ApiRbac.Controllers
             return Ok("done");
         }
 
+       
+        [HttpGet]
+        public async Task<IActionResult> signinoidc()
+        {
+            try
+            {
+                string? code = HttpContext.Request.QueryString.Value;
+                string? token = await HttpContext.GetTokenAsync("id_token");
+                return Ok(token);
+
+            }
+            catch (AmazonS3Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return StatusCode(403);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return StatusCode(500);
+
+            }
+
+        }
+
+
+
+
+
 
         [Authorize]
         [HttpGet]
