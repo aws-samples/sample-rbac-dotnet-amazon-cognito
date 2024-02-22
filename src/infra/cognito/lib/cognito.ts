@@ -2,8 +2,9 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import { OAuthScope } from "aws-cdk-lib/aws-cognito";
-import { StringParameter } from "aws-cdk-lib/aws-ssm";
+import { ParameterTier, StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Stack, CfnOutput } from "aws-cdk-lib";
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
 export class CognitoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -164,6 +165,43 @@ export class CognitoStack extends cdk.Stack {
       parameterName: "/security/oauth20/rbac/identitypoolid",
     });
 
+  
+    const ClientId = new StringParameter(this, "clientId", {
+      stringValue: appClient.userPoolClientId,
+      parameterName: "/security/oauth20/rbac/clientid",
+    });
+
+    const clientSecret = new Secret(this, 'clientSecret', {
+      secretName: 'rbacappclientsecret',
+      secretObjectValue: {
+        rbacclientsecret: appClient.userPoolClientSecret,   
+      },
+    })
+
+/* 
+    const ClientSecret = new StringParameter(this, "clientSecret", {    
+      stringValue: appClient.userPoolClientSecret.toString(),
+      parameterName: "/security/oauth20/rbac/clientsecret",
+      tier: ParameterTier.ADVANCED,
+           
+    }); */
+
+    const tokenEndpoint = new StringParameter(this, "tokenEndpoint", {
+      stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/oauth2/token`,
+      parameterName: "/security/oauth20/rbac/tokenendpoint",
+    });
+
+    
+
+    const authEndpoint = new StringParameter(this, "authEndpoint", {
+      stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${appClient.userPoolClientId}&scope=phone email openid profile aws.cognito.signin.user.admin&redirect_uri=${callBack}`,
+      parameterName: "/security/oauth20/rbac/authendpoint",
+    });
+
+    const redirecturi = new StringParameter(this, "redirectUri", {
+      stringValue: callBack,
+      parameterName: "/security/oauth20/redirecturi",
+    });
     
     new CfnOutput(this, "AuthenticationURL", {
       value: `https://${domainName}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${appClient.userPoolClientId}&scope=phone email openid profile aws.cognito.signin.user.admin&redirect_uri=${callBack}`,
