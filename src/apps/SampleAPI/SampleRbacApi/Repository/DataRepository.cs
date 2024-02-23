@@ -30,19 +30,21 @@ namespace ApiRbac.Repository
         public async Task<List<string>> listData(string? token)
         {
             // Cognito Identity Pool ID
+            // Cognito isuer that is the authorirty 
+            // they are used in CognitoAWSCredentials and addLogin
 
             string? identityPool = configuration["oauth20:rbac:identitypoolid"];
-
-            JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwtSecurityToken = jwtSecurityTokenHandler.ReadJwtToken(token);
-
-            var issuer = jwtSecurityToken.Claims.First(claim => claim.Type == "iss").Value;
+            string? issuer = configuration["oauth20:rbac:authority"];
+            if (issuer == null || identityPool == null)
+            {
+                throw new Exception("configuration exception");
+            }
 
 
             if (issuer.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase)) issuer = issuer.Substring("https://".Length);
             if (issuer.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase)) issuer = issuer.Substring("http://".Length);
             CognitoAWSCredentials credentials = new CognitoAWSCredentials(identityPool, RegionEndpoint.GetBySystemName(configuration.GetValue<string>("Region:Name")));
-
+           
 
             credentials.AddLogin(issuer, token);
 
@@ -72,14 +74,15 @@ namespace ApiRbac.Repository
 
 
             // Cognito Identity Pool ID
+            // Cognito isuer that is the authorirty 
+            // they are used in CognitoAWSCredentials and addLogin
 
             string? identityPool = configuration["oauth20:rbac:identitypoolid"];
-
-            JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwtSecurityToken = jwtSecurityTokenHandler.ReadJwtToken(token);
-
-            var issuer = jwtSecurityToken.Claims.First(claim => claim.Type == "iss").Value;
-
+            string? issuer = configuration["oauth20:rbac:authority"];
+            if (issuer == null || identityPool == null)
+            {
+                throw new Exception("configuration exception");
+            }
 
             if (issuer.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase)) issuer = issuer.Substring("https://".Length);
             if (issuer.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase)) issuer = issuer.Substring("http://".Length);

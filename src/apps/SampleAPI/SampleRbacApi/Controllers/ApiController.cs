@@ -9,6 +9,14 @@ using Microsoft.AspNetCore.Authentication;
 using Newtonsoft.Json;
 using Amazon.CognitoIdentity.Model;
 using Amazon.S3;
+using System.Net.Http;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text.Encodings.Web;
+using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
+using Microsoft.AspNetCore.Http;
+using Amazon.SecretsManager.Extensions.Caching;
+using Newtonsoft.Json.Linq;
+
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -23,12 +31,14 @@ namespace ApiRbac.Controllers
         private readonly IConfiguration configuration;
         private readonly ILogger<ApiController> logger;
         private IDataRepository repository;
+        private static HttpClient client = new HttpClient();
 
         public ApiController(IConfiguration configuration, ILogger<ApiController> logger, IDataRepository repository)
         {
             this.configuration = configuration;
             this.logger = logger;
             this.repository = repository;
+
         }
 
         [Authorize]
