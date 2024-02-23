@@ -4,6 +4,9 @@ using Web.Models;
 using Amazon.SecretsManager.Extensions.Caching;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Net.Http;
 
 namespace Web.Controllers
 {
@@ -32,7 +35,7 @@ namespace Web.Controllers
 
                 string? code = HttpContext.Request.Query["code"];
                 string? clientId = configuration["oauth20:rbac:clientid"];
-                string? redirectUri = configuration["redirecturi"];
+                string? redirectUri = configuration["oauth20:redirecturi"];
                 string? tokenEndpoint = configuration["oauth20:rbac:tokenendpoint"];
                 SecretsManagerCache cache = new SecretsManagerCache();
                 string? clientSecret = await cache.GetSecretString("rbacappclientsecret");
@@ -40,7 +43,6 @@ namespace Web.Controllers
                 if (code == null || clientId == null || redirectUri == null || tokenEndpoint == null || clientSecret == null)
                 {
                     throw new ArgumentNullException();
-
                 }
 
 
@@ -97,20 +99,21 @@ namespace Web.Controllers
 
         public ActionResult Authenticate()
         {
-            string? url = configuration["authenticationuri"];
+            string? url = configuration["oauth20:rbac:authendpoint"];
             // ...
             return Redirect(url);
         }
 
-        public IActionResult Test()
-        {
-            var d = "String";
-            return View();
-        }
 
-        public IActionResult GetBucket()
+        public async Task<IActionResult> GetBucket()
         {
             string? token = HttpContext.Session.GetString("token");
+            string? authorization = "Bearer " + token;
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync("https://localhost:7123/api/readdata");
+            ViewData["Message"] = response.StatusCode;
+
             return View("Index");
         }
 

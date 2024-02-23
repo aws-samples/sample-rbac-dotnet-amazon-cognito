@@ -35,16 +35,22 @@
             @RenderBody()
         </main>
     </div>
+    <div class="row">
     <div>
         <input type="submit" value="authenticate" onclick="location.href='@Url.Action("Authenticate", "Home")'" />
+         <input type="submit" value="get" onclick="location.href='@Url.Action("GetBucket", "Home")'" />
     </div>
-    <div>
-        <input type="submit" value="get" onclick="location.href='@Url.Action("GetBucket", "Home")'" />
+        
+        @{
+            ViewBag.Title = "Index";
+        }
+        <h3>APi result </h3>
+        @{
+            var data = ViewData["Message"];
+        }
+        <h3>status code @data</h3>
+      
     </div>
-    <div>
-        <input type="submit" value="post" onclick="location.href='@Url.Action("Test", "Home")'" />
-    </div>
-
    
 
 

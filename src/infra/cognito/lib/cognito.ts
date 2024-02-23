@@ -176,15 +176,7 @@ export class CognitoStack extends cdk.Stack {
       secretObjectValue: {
         rbacclientsecret: appClient.userPoolClientSecret,   
       },
-    })
-
-/* 
-    const ClientSecret = new StringParameter(this, "clientSecret", {    
-      stringValue: appClient.userPoolClientSecret.toString(),
-      parameterName: "/security/oauth20/rbac/clientsecret",
-      tier: ParameterTier.ADVANCED,
-           
-    }); */
+    });
 
     const tokenEndpoint = new StringParameter(this, "tokenEndpoint", {
       stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/oauth2/token`,
