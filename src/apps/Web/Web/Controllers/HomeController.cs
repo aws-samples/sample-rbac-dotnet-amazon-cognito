@@ -117,6 +117,34 @@ namespace Web.Controllers
             return View("Index");
         }
 
+        public async Task<IActionResult> WriteBucket()
+        {
+            string? token = HttpContext.Session.GetString("token");
+            string? authorization = "Bearer " + token;
+
+            var dict = new Dictionary<string, string>();
+            dict.Add("content", "somedata");
+            
+           
+            var fcontent = new FormUrlEncodedContent(dict);
+            fcontent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+
+
+           
+            using var req = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7123/api/writedata") { Content = fcontent };
+            req.Headers.Add("Authorization", authorization);
+            HttpResponseMessage response = await client.SendAsync(req);
+
+
+            ViewData["Message"] = response.StatusCode;
+
+
+
+
+            return View("Index");
+        }
+
 
         public IActionResult Privacy()
         {
