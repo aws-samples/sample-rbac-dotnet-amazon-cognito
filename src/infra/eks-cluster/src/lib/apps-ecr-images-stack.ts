@@ -8,7 +8,7 @@ export class AppsEcrImageStack extends cdk.Stack {
     super(scope, id, props);
 
     const asset = new ecrAssets.DockerImageAsset(this, 'sample-api-image', {
-      directory: path.join(__dirname, '../../../../apps/SampleAPI'),
+      directory: path.join(__dirname, '../../../../apps/SampleAPI/SampleRbacApi'),
       assetName: 'sample-api',
       file: 'Dockerfile',
       platform: ecrAssets.Platform.LINUX_AMD64,
