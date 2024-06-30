@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="6.0.0" />
+    <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="6.2.0" />
     <PackageReference Include="AWSSDK.SecretsManager.Caching" Version="1.0.6" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
