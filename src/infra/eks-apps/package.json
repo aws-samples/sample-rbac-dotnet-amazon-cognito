@@ -22,7 +22,7 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
-    "cdk8s": "^2.68.30",
+    "cdk8s": "^2.68.83",
     "cdk8s-plus-27": "^2.7.73",
     "constructs": "^10.3.0"
   },
