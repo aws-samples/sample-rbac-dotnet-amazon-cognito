@@ -69,7 +69,6 @@ export class CognitoStack extends cdk.Stack {
     });
 
  
-  
     const authoriry = new StringParameter(this, "authority", {
       stringValue: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
       parameterName: "/security/oauth20/rbac/authority",
@@ -79,6 +78,42 @@ export class CognitoStack extends cdk.Stack {
       stringValue: identityPool.ref,
       parameterName: "/security/oauth20/rbac/identitypoolid",
     });
+
+  
+    const ClientId = new StringParameter(this, "clientId", {
+      stringValue: appClient.userPoolClientId,
+      parameterName: "/security/oauth20/rbac/clientid",
+    });
+
+    const clientSecret = new Secret(this, 'clientSecret', {
+      secretName: 'rbacappclientsecret',
+      secretObjectValue: {
+        rbacclientsecret: appClient.userPoolClientSecret,   
+      },
+    });
+
+    const tokenEndpoint = new StringParameter(this, "tokenEndpoint", {
+      stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/oauth2/token`,
+      parameterName: "/security/oauth20/rbac/tokenendpoint",
+    });
+
+    
+
+    const authEndpoint = new StringParameter(this, "authEndpoint", {
+      stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${appClient.userPoolClientId}&scope=phone email openid profile aws.cognito.signin.user.admin&redirect_uri=${callBack}`,
+      parameterName: "/security/oauth20/rbac/authendpoint",
+    });
+
+    const redirecturi = new StringParameter(this, "redirectUri", {
+      stringValue: callBack,
+      parameterName: "/security/oauth20/redirecturi",
+    });
+  
+   
+   
+   
+
+
 
     new CfnOutput(this, "Authority", {
       value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
