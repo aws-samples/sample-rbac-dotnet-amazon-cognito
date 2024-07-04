@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { CognitoStack } from "./cognito";
+import { CognitoRoleMappingsStack } from "./cognitorolemappings";
 import { IamStack } from "./iam";
 
 export class SecurityStack extends cdk.Stack {
@@ -19,9 +20,16 @@ export class SecurityStack extends cdk.Stack {
       env: { region: region },
     });
 
-   
+    const cognitorolemappings: CognitoRoleMappingsStack = new CognitoRoleMappingsStack(
+      app,
+      "cognitoRoleMappingsStack",
+      {
+        env: { region: region },
+      }
+    );
 
     iamStack.addDependency(cognitoStack);
+    cognitorolemappings.addDependency(iamStack);
 
   
   }
