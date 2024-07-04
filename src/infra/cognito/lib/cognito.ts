@@ -4,6 +4,7 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import { OAuthScope } from "aws-cdk-lib/aws-cognito";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Stack, CfnOutput } from "aws-cdk-lib";
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
 export class CognitoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
