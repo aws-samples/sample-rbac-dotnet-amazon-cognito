@@ -15,10 +15,15 @@ export class SecurityStack extends cdk.Stack {
       env: { region: region },
     }); */
 
+
+    
+
+
+/* 
     const cognitoStack: CognitoStack = new CognitoStack(app, "congnitoStack", {
       env: { region: region },
     });
-
+ */
    // cognitoStack.addDependency(iamStack);
 
   
