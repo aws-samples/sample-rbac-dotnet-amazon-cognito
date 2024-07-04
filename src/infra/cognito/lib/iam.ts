@@ -15,6 +15,8 @@ export class IamStack extends cdk.Stack {
 
     const uniq = new Date().getTime();
 
+    const identityPoolId = cdk.Fn.importValue("iPoolId");
+
     const listpolicyDocument = {
       Version: "2012-10-17",
       Statement: [
@@ -37,8 +39,9 @@ export class IamStack extends cdk.Stack {
       roleName: "s3listrole" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
-          "cognito-identity.amazonaws.com:aud": "*",
+          "cognito-identity.amazonaws.com:aud": `${identityPoolId}`,       
         },
+      
         "ForAnyValue:StringLike": {
           "cognito-identity.amazonaws.com:amr": "authenticated",
         },
@@ -70,7 +73,7 @@ export class IamStack extends cdk.Stack {
       roleName: "s3writerole" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
-          "cognito-identity.amazonaws.com:aud": "*",
+          "cognito-identity.amazonaws.com:aud": `${identityPoolId}`,
         },
         "ForAnyValue:StringLike": {
           "cognito-identity.amazonaws.com:amr": "authenticated",
@@ -87,7 +90,7 @@ export class IamStack extends cdk.Stack {
     });
 
     new CfnOutput(this, "writeRoleArn", {
-      value: s3ListRole.roleArn,
+      value: s3WriteRole.roleArn,
       description: "role arn for list role",
       exportName: "writeRoleArn",
     });

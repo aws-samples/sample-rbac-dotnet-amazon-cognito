@@ -66,7 +66,7 @@ export class CognitoStack extends cdk.Stack {
       description: "description",
       groupName: "list",
       precedence: 0,
-      roleArn: listRoleArn,
+    //  roleArn: listRoleArn,
     });
 
     listGroup.addDependency(listUser);
@@ -95,7 +95,7 @@ export class CognitoStack extends cdk.Stack {
       description: "description",
       groupName: "write",
       precedence: 0,
-      roleArn: writeRoleArn,
+   //   roleArn: writeRoleArn,
     });
 
     writeGroup.addDependency(writeUser);
@@ -144,12 +144,20 @@ export class CognitoStack extends cdk.Stack {
               ambiguousRoleResolution: "AuthenticatedRole",
             },
           },
-          roles: roles,
+       //   roles: roles,
+         roles: [],
         }
       );
 
     identityPool.addDependency(writeAttach);
     identityPool.addDependency(listAttach);
+
+    listGroup.addOverride("Properties.roleArn", listRoleArn);
+    writeGroup.addOverride("Properties.roleArn", writeRoleArn);
+    cfnIdentityPoolRoleAttachment.addOverride('Properties.Roles', roles);
+    
+
+
 
     const authoriry = new StringParameter(this, "authority", {
       stringValue: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
