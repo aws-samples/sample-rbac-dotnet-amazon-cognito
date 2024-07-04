@@ -11,15 +11,15 @@ export class SecurityStack extends cdk.Stack {
 
     const app = new cdk.App();
 
-    const iamStack: IamStack = new IamStack(app, "iamStack", {
+   /*  const iamStack: IamStack = new IamStack(app, "iamStack", {
       env: { region: region },
-    });
+    }); */
 
     const cognitoStack: CognitoStack = new CognitoStack(app, "congnitoStack", {
       env: { region: region },
     });
 
-    cognitoStack.addDependency(iamStack);
+   // cognitoStack.addDependency(iamStack);
 
   
   }

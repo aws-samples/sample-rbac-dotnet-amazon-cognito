@@ -11,8 +11,8 @@ export class CognitoStack extends cdk.Stack {
     super(scope, id, props);
 
     const uniq = new Date().getTime();
-    const listRoleArn = cdk.Fn.importValue("listRoleArn");
-    const writeRoleArn = cdk.Fn.importValue("writeRoleArn");
+//    const listRoleArn = cdk.Fn.importValue("listRoleArn");
+//    const writeRoleArn = cdk.Fn.importValue("writeRoleArn");
     const poolName = "rbacauthz" + uniq;
     const region = Stack.of(this).region;
     const callBack =  this.node.tryGetContext('callback');
@@ -70,7 +70,7 @@ export class CognitoStack extends cdk.Stack {
       description: "description",
       groupName: "list",
       precedence: 0,
-      roleArn: listRoleArn,
+  //    roleArn: listRoleArn,
     });
 
     listGroup.addDependency(listUser);
@@ -99,7 +99,7 @@ export class CognitoStack extends cdk.Stack {
       description: "description",
       groupName: "write",
       precedence: 0,
-      roleArn: writeRoleArn,
+    //  roleArn: writeRoleArn,
     });
 
     writeGroup.addDependency(writeUser);
@@ -128,7 +128,7 @@ export class CognitoStack extends cdk.Stack {
       ],
     });
 
-    const roles = new Map<string, string>([
+    /* const roles = new Map<string, string>([
       ["role1", listRoleArn],
       ["role2", writeRoleArn],
     ]);
@@ -150,7 +150,7 @@ export class CognitoStack extends cdk.Stack {
           },
           roles: roles,
         }
-      );
+      ); */
 
     identityPool.addDependency(writeAttach);
     identityPool.addDependency(listAttach);
