@@ -65,7 +65,7 @@ export class CognitoStack extends cdk.Stack {
       username: "listuser",
     });
 
-    const listGroup = new cognito.CfnUserPoolGroup(this, "listGroup", {
+   /*  const listGroup = new cognito.CfnUserPoolGroup(this, "listGroup", {
       userPoolId: userpool.userPoolId,
       description: "description",
       groupName: "list",
@@ -85,7 +85,7 @@ export class CognitoStack extends cdk.Stack {
       }
     );
 
-    listAttach.addDependency(listGroup);
+    listAttach.addDependency(listGroup); */
 
     //------------
 
@@ -94,17 +94,17 @@ export class CognitoStack extends cdk.Stack {
       username: "writeuser",
     });
 
-    const writeGroup = new cognito.CfnUserPoolGroup(this, "writeGroup", {
+  /*   const writeGroup = new cognito.CfnUserPoolGroup(this, "writeGroup", {
       userPoolId: userpool.userPoolId,
       description: "description",
       groupName: "write",
       precedence: 0,
     //  roleArn: writeRoleArn,
-    });
+    }); */
 
-    writeGroup.addDependency(writeUser);
+   // writeGroup.addDependency(writeUser);
 
-    const writeAttach = new cognito.CfnUserPoolUserToGroupAttachment(
+   /*  const writeAttach = new cognito.CfnUserPoolUserToGroupAttachment(
       this,
       "writeAttach",
       {
@@ -115,7 +115,7 @@ export class CognitoStack extends cdk.Stack {
     );
 
     writeAttach.addDependency(writeGroup);
-
+ */
     const identityPool = new cognito.CfnIdentityPool(this, "IdentityPool", {
       allowUnauthenticatedIdentities: false,
 
@@ -152,8 +152,8 @@ export class CognitoStack extends cdk.Stack {
         }
       ); */
 
-    identityPool.addDependency(writeAttach);
-    identityPool.addDependency(listAttach);
+    identityPool.addDependency(listUser);
+    identityPool.addDependency(writeUser);
 
     const authoriry = new StringParameter(this, "authority", {
       stringValue: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
@@ -202,13 +202,6 @@ export class CognitoStack extends cdk.Stack {
       exportName: "AuthenticationURL",
     });
     
-    new CfnOutput(this, "poolid", {
-      value: userpool.userPoolId,
-      description:
-        "poolid",
-      exportName: "poolid",
-    });
-
 
     new CfnOutput(this, "Authority", {
       value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
@@ -241,5 +234,17 @@ export class CognitoStack extends cdk.Stack {
       description: "providerName",
       exportName: "providerName",
     });
+
+
+    
+    new CfnOutput(this, '"poolid', {
+      value: userpool.userPoolId,
+      description: "upoolId",
+      exportName: "upoolId",
+    });
+
+
+
+
   }
 }
