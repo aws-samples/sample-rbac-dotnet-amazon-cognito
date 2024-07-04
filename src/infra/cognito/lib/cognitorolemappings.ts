@@ -98,6 +98,13 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
         }
     );
 
+
+    new CfnOutput(this, "identitypool", {
+        value: "ipoolId",
+        description: "identity pool",
+        exportName: "IPool ID",
+      });
+
    
   
 
