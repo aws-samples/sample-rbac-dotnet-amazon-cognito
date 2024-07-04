@@ -13,6 +13,7 @@ export class CognitoStack extends cdk.Stack {
  
     const poolName = "rbacauthz" + uniq;
     const region = Stack.of(this).region;
+    const callBack =  this.node.tryGetContext('callback');
 
     const userpool = new cognito.UserPool(this, "rbacUserPool", {
       userPoolName: poolName,
@@ -109,12 +110,6 @@ export class CognitoStack extends cdk.Stack {
       parameterName: "/security/oauth20/redirecturi",
     });
   
-   
-   
-   
-
-
-
     new CfnOutput(this, "Authority", {
       value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
       description:
