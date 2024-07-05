@@ -17,10 +17,7 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
     const cid = cdk.Fn.importValue("CId");
     const region = Stack.of(this).region;
 
-  /*   const listUser = new cognito.CfnUserPoolUser(this, "listPoolUser", {
-        userPoolId: upoolId,
-        username: "listuser",
-      }); */
+ 
   
       const listGroup2 = new cognito.CfnUserPoolGroup(this, "listGroup2", {
         userPoolId: upoolId,
@@ -30,7 +27,7 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
         roleArn: listRoleArn,
       });
   
-  //    listGroup.addDependency(listUser);
+
   
       const listAttach = new cognito.CfnUserPoolUserToGroupAttachment(
         this,
@@ -42,14 +39,6 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
         }
       );
   
-     // listAttach.addDependency(listGroup);
-  
-      //------------
-  
-    //   const writeUser = new cognito.CfnUserPoolUser(this, "writePoolUser", {
-    //     userPoolId: upoolId,
-    //     username: "writeuser",
-    //   });
   
       const writeGroup2 = new cognito.CfnUserPoolGroup(this, "writeGroup2", {
         userPoolId: upoolId,
@@ -59,7 +48,7 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
         roleArn: writeRoleArn,
       });
   
-     // writeGroup.addDependency(writeUser);
+   
   
       const writeAttach = new cognito.CfnUserPoolUserToGroupAttachment(
         this,
