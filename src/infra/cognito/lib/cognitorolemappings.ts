@@ -60,7 +60,7 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
         }
       );
   
-    //  writeAttach.addDependency(writeGroup);
+   
   
 
     const roles = new Map<string, string>([
