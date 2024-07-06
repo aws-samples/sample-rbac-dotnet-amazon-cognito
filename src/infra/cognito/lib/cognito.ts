@@ -11,8 +11,8 @@ export class CognitoStack extends cdk.Stack {
     super(scope, id, props);
 
     const uniq = new Date().getTime();
-    const listRoleArn = cdk.Fn.importValue("listRoleArn");
-    const writeRoleArn = cdk.Fn.importValue("writeRoleArn");
+//    const listRoleArn = cdk.Fn.importValue("listRoleArn");
+//    const writeRoleArn = cdk.Fn.importValue("writeRoleArn");
     const poolName = "rbacauthz" + uniq;
     const region = Stack.of(this).region;
     const callBack =  this.node.tryGetContext('callback');
@@ -65,27 +65,7 @@ export class CognitoStack extends cdk.Stack {
       username: "listuser",
     });
 
-    const listGroup = new cognito.CfnUserPoolGroup(this, "listGroup", {
-      userPoolId: userpool.userPoolId,
-      description: "description",
-      groupName: "list",
-      precedence: 0,
-      roleArn: listRoleArn,
-    });
-
-    listGroup.addDependency(listUser);
-
-    const listAttach = new cognito.CfnUserPoolUserToGroupAttachment(
-      this,
-      "listAttachment",
-      {
-        groupName: listGroup.groupName as string,
-        username: listUser.username as string,
-        userPoolId: userpool.userPoolId,
-      }
-    );
-
-    listAttach.addDependency(listGroup);
+ 
 
     //------------
 
@@ -94,28 +74,7 @@ export class CognitoStack extends cdk.Stack {
       username: "writeuser",
     });
 
-    const writeGroup = new cognito.CfnUserPoolGroup(this, "writeGroup", {
-      userPoolId: userpool.userPoolId,
-      description: "description",
-      groupName: "write",
-      precedence: 0,
-      roleArn: writeRoleArn,
-    });
-
-    writeGroup.addDependency(writeUser);
-
-    const writeAttach = new cognito.CfnUserPoolUserToGroupAttachment(
-      this,
-      "writeAttach",
-      {
-        groupName: writeGroup.groupName as string,
-        username: writeUser.username as string,
-        userPoolId: userpool.userPoolId,
-      }
-    );
-
-    writeAttach.addDependency(writeGroup);
-
+  
     const identityPool = new cognito.CfnIdentityPool(this, "IdentityPool", {
       allowUnauthenticatedIdentities: false,
 
@@ -128,32 +87,10 @@ export class CognitoStack extends cdk.Stack {
       ],
     });
 
-    const roles = new Map<string, string>([
-      ["role1", listRoleArn],
-      ["role2", writeRoleArn],
-    ]);
+    
 
-    const cfnIdentityPoolRoleAttachment =
-      new cognito.CfnIdentityPoolRoleAttachment(
-        this,
-        "IdentityPoolRoleAttachment",
-        {
-          identityPoolId: identityPool.ref,
-
-          // the properties below are optional
-          roleMappings: {
-            roleMappingsKey: {
-              type: "Token",
-              identityProvider: `cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}:${appClient.userPoolClientId}`,
-              ambiguousRoleResolution: "AuthenticatedRole",
-            },
-          },
-          roles: roles,
-        }
-      );
-
-    identityPool.addDependency(writeAttach);
-    identityPool.addDependency(listAttach);
+    identityPool.addDependency(listUser);
+    identityPool.addDependency(writeUser);
 
     const authoriry = new StringParameter(this, "authority", {
       stringValue: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
@@ -202,13 +139,6 @@ export class CognitoStack extends cdk.Stack {
       exportName: "AuthenticationURL",
     });
     
-    new CfnOutput(this, "poolid", {
-      value: userpool.userPoolId,
-      description:
-        "poolid",
-      exportName: "poolid",
-    });
-
 
     new CfnOutput(this, "Authority", {
       value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
@@ -241,5 +171,17 @@ export class CognitoStack extends cdk.Stack {
       description: "providerName",
       exportName: "providerName",
     });
+
+
+    
+    new CfnOutput(this, '"poolid', {
+      value: userpool.userPoolId,
+      description: "upoolId",
+      exportName: "upoolId",
+    });
+
+
+
+
   }
 }
