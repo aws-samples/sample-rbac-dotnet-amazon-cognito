@@ -67,13 +67,9 @@ namespace Web.Controllers
 
 
 
-                // using var req = new HttpRequestMessage(HttpMethod.Post, "https://domainrbacauthz1708374965589.auth.us-east-1.amazoncognito.com/oauth2/token") { Content = fcontent };
-
+              
                 using var req = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint) { Content = fcontent };
 
-
-                //req.Headers = new MediaTypeHeaderValue("application/json");
-                //req.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
                 req.Headers.Add("Authorization", basicauth);
                 using var res = await client.SendAsync(req);
 
