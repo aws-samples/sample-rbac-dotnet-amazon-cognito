@@ -60,7 +60,7 @@ namespace Web.Controllers
                 dict.Add("grant_type", "authorization_code");
                 dict.Add("code", code);
                 dict.Add("redirect_uri", redirectUri);
-                // dict.Add("redirect_uri", "https://localhost:7123/api/signinoidc");
+               
 
                 var fcontent = new FormUrlEncodedContent(dict);
                 fcontent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
