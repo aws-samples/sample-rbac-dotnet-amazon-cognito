@@ -4,6 +4,9 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import { OAuthScope } from "aws-cdk-lib/aws-cognito";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Stack, CfnOutput } from "aws-cdk-lib";
+import * as s3 from "aws-cdk-lib/aws-s3";
+
+
 
 export class CognitoRoleMappingsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -16,6 +19,24 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
     const upoolId = cdk.Fn.importValue("upoolId");
     const cid = cdk.Fn.importValue("CId");
     const region = Stack.of(this).region;
+
+    const uniq = new Date().getTime();
+
+    const bname = "rbacauthz"+uniq;
+
+
+    const bucket = new s3.Bucket(this, 'MyBucket', {
+      bucketName: bname,
+      versioned: true,   // Enable versioning
+      removalPolicy: cdk.RemovalPolicy.DESTROY,  // NOT recommended for production code
+      enforceSSL: true, 
+      publicReadAccess: false
+    });
+
+    const bucketSSM = new StringParameter(this, "bucketName", {
+      stringValue: bname,
+      parameterName: "/security/oauth20/rbac/bucket",
+    });
 
  
   
@@ -38,6 +59,8 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
           userPoolId: upoolId,
         }
       );
+
+      listAttach.addDependency(listGroup2);
   
   
       const writeGroup2 = new cognito.CfnUserPoolGroup(this, "writeGroup2", {
@@ -59,6 +82,8 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
           userPoolId: upoolId,
         }
       );
+
+      writeAttach.addDependency(writeGroup2);
   
    
   

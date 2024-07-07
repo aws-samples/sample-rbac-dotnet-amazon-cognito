@@ -48,7 +48,8 @@ namespace ApiRbac.Controllers
             try
             {
                 string? token = await HttpContext.GetTokenAsync("access_token");
-                string? bucketName = configuration.GetValue<string>("Bucket:Name");
+                string? bucketName = configuration["oauth20:rbac:bucket"];
+            
 
                 var result = await repository.writeData(token, bucketName, content.Substring(0,3),content);
 
