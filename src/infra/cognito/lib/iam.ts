@@ -39,9 +39,9 @@ export class IamStack extends cdk.Stack {
       roleName: "s3listrole" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
-          "cognito-identity.amazonaws.com:aud": `${identityPoolId}`,       
+          "cognito-identity.amazonaws.com:aud": `${identityPoolId}`,
         },
-      
+
         "ForAnyValue:StringLike": {
           "cognito-identity.amazonaws.com:amr": "authenticated",
         },

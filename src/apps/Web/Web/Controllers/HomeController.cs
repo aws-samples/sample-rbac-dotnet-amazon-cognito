@@ -19,7 +19,7 @@ namespace Web.Controllers
         public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
             this.logger = logger;
-            this.configuration = configuration;       
+            this.configuration = configuration;
         }
 
         public IActionResult Index()
@@ -28,12 +28,10 @@ namespace Web.Controllers
         }
 
 
-        public async Task<IActionResult> signinoidc()
+        public async Task<IActionResult> signinoidc([FromQuery] string code)
         {
             try
             {
-
-                string? code = HttpContext.Request.Query["code"];
                 string? clientId = configuration["oauth20:rbac:clientid"];
                 string? redirectUri = configuration["oauth20:redirecturi"];
                 string? tokenEndpoint = configuration["oauth20:rbac:tokenendpoint"];
@@ -42,7 +40,7 @@ namespace Web.Controllers
 
                 if (code == null || clientId == null || redirectUri == null || tokenEndpoint == null || clientSecret == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException($"Invalid parameters: {nameof(code)}");
                 }
 
 
@@ -60,20 +58,20 @@ namespace Web.Controllers
                 dict.Add("grant_type", "authorization_code");
                 dict.Add("code", code);
                 dict.Add("redirect_uri", redirectUri);
-               
+
 
                 var fcontent = new FormUrlEncodedContent(dict);
                 fcontent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
 
 
-              
+
                 using var req = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint) { Content = fcontent };
 
                 req.Headers.Add("Authorization", basicauth);
                 using var res = await client.SendAsync(req);
 
-                string token  = await res.Content.ReadAsStringAsync();
+                string token = await res.Content.ReadAsStringAsync();
                 JObject t = (JObject)JsonConvert.DeserializeObject(token);
                 string id_token = t["id_token"].Value<string>();
                 HttpContext.Session.SetString("token", id_token);
@@ -120,14 +118,14 @@ namespace Web.Controllers
 
             var dict = new Dictionary<string, string>();
             dict.Add("content", "somedata");
-            
-           
+
+
             var fcontent = new FormUrlEncodedContent(dict);
             fcontent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
 
 
-           
+
             using var req = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7123/api/writedata") { Content = fcontent };
             req.Headers.Add("Authorization", authorization);
             HttpResponseMessage response = await client.SendAsync(req);

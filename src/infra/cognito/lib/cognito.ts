@@ -11,12 +11,11 @@ export class CognitoStack extends cdk.Stack {
     super(scope, id, props);
 
     const uniq = new Date().getTime();
-//    const listRoleArn = cdk.Fn.importValue("listRoleArn");
-//    const writeRoleArn = cdk.Fn.importValue("writeRoleArn");
+    //    const listRoleArn = cdk.Fn.importValue("listRoleArn");
+    //    const writeRoleArn = cdk.Fn.importValue("writeRoleArn");
     const poolName = "rbacauthz" + uniq;
     const region = Stack.of(this).region;
-    const callBack =  this.node.tryGetContext('callback');
-    
+    const callBack = this.node.tryGetContext("callback");
 
     const userpool = new cognito.UserPool(this, "rbacUserPool", {
       userPoolName: poolName,
@@ -65,8 +64,6 @@ export class CognitoStack extends cdk.Stack {
       username: "listuser",
     });
 
- 
-
     //------------
 
     const writeUser = new cognito.CfnUserPoolUser(this, "writePoolUser", {
@@ -74,7 +71,6 @@ export class CognitoStack extends cdk.Stack {
       username: "writeuser",
     });
 
-  
     const identityPool = new cognito.CfnIdentityPool(this, "IdentityPool", {
       allowUnauthenticatedIdentities: false,
 
@@ -86,8 +82,6 @@ export class CognitoStack extends cdk.Stack {
         },
       ],
     });
-
-    
 
     identityPool.addDependency(listUser);
     identityPool.addDependency(writeUser);
@@ -102,16 +96,15 @@ export class CognitoStack extends cdk.Stack {
       parameterName: "/security/oauth20/rbac/identitypoolid",
     });
 
-  
     const ClientId = new StringParameter(this, "clientId", {
       stringValue: appClient.userPoolClientId,
       parameterName: "/security/oauth20/rbac/clientid",
     });
 
-    const clientSecret = new Secret(this, 'clientSecret', {
-      secretName: 'rbacappclientsecret',
+    const clientSecret = new Secret(this, "clientSecret", {
+      secretName: "rbacappclientsecret",
       secretObjectValue: {
-        rbacclientsecret: appClient.userPoolClientSecret,   
+        rbacclientsecret: appClient.userPoolClientSecret,
       },
     });
 
@@ -119,8 +112,6 @@ export class CognitoStack extends cdk.Stack {
       stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/oauth2/token`,
       parameterName: "/security/oauth20/rbac/tokenendpoint",
     });
-
-    
 
     const authEndpoint = new StringParameter(this, "authEndpoint", {
       stringValue: `https://${domainName}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${appClient.userPoolClientId}&scope=phone email openid profile aws.cognito.signin.user.admin&redirect_uri=${callBack}`,
@@ -131,14 +122,12 @@ export class CognitoStack extends cdk.Stack {
       stringValue: callBack,
       parameterName: "/security/oauth20/redirecturi",
     });
-    
+
     new CfnOutput(this, "AuthenticationURL", {
       value: `https://${domainName}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${appClient.userPoolClientId}&scope=phone email openid profile aws.cognito.signin.user.admin&redirect_uri=${callBack}`,
-      description:
-        "AuthenticationURL",
+      description: "AuthenticationURL",
       exportName: "AuthenticationURL",
     });
-    
 
     new CfnOutput(this, "Authority", {
       value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
@@ -146,7 +135,6 @@ export class CognitoStack extends cdk.Stack {
         "Authority name used for authorithy check by resource servers",
       exportName: "Auth",
     });
-
 
     new CfnOutput(this, "AccesstokenURL", {
       value: `https://${domainName}.auth.${region}.amazoncognito.com/oauth2/token`,
@@ -172,16 +160,10 @@ export class CognitoStack extends cdk.Stack {
       exportName: "providerName",
     });
 
-
-    
     new CfnOutput(this, '"poolid', {
       value: userpool.userPoolId,
       description: "upoolId",
       exportName: "upoolId",
     });
-
-
-
-
   }
 }

@@ -12,12 +12,9 @@ export class SecurityStack extends cdk.Stack {
 
     const app = new cdk.App();
 
-   /*  const iamStack: IamStack = new IamStack(app, "iamStack", {
+    /*  const iamStack: IamStack = new IamStack(app, "iamStack", {
       env: { region: region },
     }); */
-
-
-    
 
     const cognitoStack: CognitoStack = new CognitoStack(app, "congnitoStack", {
       env: { region: region },
@@ -27,28 +24,19 @@ export class SecurityStack extends cdk.Stack {
       env: { region: region },
     });
 
-    const cognitorolemappings: CognitoRoleMappingsStack = new CognitoRoleMappingsStack(
-      app,
-      "cognitoRoleMappingsStack",
-      {
+    const cognitorolemappings: CognitoRoleMappingsStack =
+      new CognitoRoleMappingsStack(app, "cognitoRoleMappingsStack", {
         env: { region: region },
-      }
-    );
+      });
 
     iamStack.addDependency(cognitoStack);
     cognitorolemappings.addDependency(iamStack);
 
-    
-    
-
-
-/* 
+    /* 
     const cognitoStack: CognitoStack = new CognitoStack(app, "congnitoStack", {
       env: { region: region },
     });
  */
-   // cognitoStack.addDependency(iamStack);
-
-  
+    // cognitoStack.addDependency(iamStack);
   }
 }

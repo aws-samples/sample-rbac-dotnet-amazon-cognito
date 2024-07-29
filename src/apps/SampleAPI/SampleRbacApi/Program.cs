@@ -58,7 +58,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-
     options.Authority = configuration["oauth20:rbac:authority"];
 
     options.TokenValidationParameters = new TokenValidationParameters
@@ -70,8 +69,6 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false,
     };
     options.SaveToken = true;
-
-
 });
 
 builder.Services.AddHealthChecks();
