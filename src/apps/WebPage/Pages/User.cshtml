@@ -1,0 +1,18 @@
+@page
+@model WebPage.Pages.User
+@{
+    ViewData["Title"] = "User";
+    var claims = HttpContext.User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    @foreach (var item in claims)
+    {
+        <p>
+            <span>@item.Type :</span>
+            <span>@item.Value</span>
+        </p>
+    }
+</div>
