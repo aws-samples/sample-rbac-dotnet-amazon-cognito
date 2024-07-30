@@ -22,7 +22,7 @@ builder.Services.AddAuthentication(options =>
     .AddOpenIdConnect(options =>
     {
         SecretsManagerCache secretsManager = new();
-        string clientSecret = secretsManager.GetSecretString("rbac-id-secret").Result ?? "{}";
+        string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
         var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
 
         options.MetadataAddress = idConfig.Authority + "/.well-known/openid-configuration";
