@@ -15,4 +15,11 @@
             <span>@item.Value</span>
         </p>
     }
+    <hr />
+    @foreach (var forecast in Model.Forecasts)
+    {
+        <p>
+            <span>Summary: @forecast.Summary</span>
+        </p>
+    }
 </div>

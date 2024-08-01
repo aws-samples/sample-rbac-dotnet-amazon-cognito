@@ -1,14 +1,28 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using Amazon.SecretsManager.Extensions.Caching;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+// Add services to the container.
+builder.Services.AddHttpClient("BackendAPIClient", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://localhost:7229");
+    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "WebPage");
+});
 
 // Add Authentication and Authorization services
 builder.Services.AddAuthorization();

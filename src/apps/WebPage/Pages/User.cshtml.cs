@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using WebPage.Contracts;
 
 namespace WebPage.Pages;
 
@@ -13,14 +9,22 @@ namespace WebPage.Pages;
 public class User : PageModel
 {
     private readonly ILogger<User> _logger;
+    private readonly HttpClient backendHttpClient;
 
-    public User(ILogger<User> logger)
+    public IList<WeatherForecast> Forecasts { get; set; } = [];
+
+    public User(ILogger<User> logger, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
+        backendHttpClient = httpClientFactory.CreateClient("BackendAPIClient");
     }
 
-    public void OnGet()
+    public async Task OnGetAsync()
     {
-
+        //Make HTTP request to http://localhost:5287 
+        var token = await HttpContext.GetTokenAsync("access_token");
+        backendHttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        Forecasts = (await backendHttpClient.GetFromJsonAsync<IList<WeatherForecast>>("/weatherforecast")) ?? [];
+        _logger.LogInformation("Toke: {Toke}", token);
     }
 }
