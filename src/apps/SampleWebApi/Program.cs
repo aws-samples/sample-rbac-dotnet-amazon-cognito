@@ -3,6 +3,10 @@ using Amazon.SecretsManager.Extensions.Caching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication;
+using ApiRbac.Interfaces;
+using ApiRbac.Repository;
+using Amazon.S3;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// dependency injection for DataRepositoty layer
+builder.Services.AddTransient<IDataRepository, DataRepository>();
 
 builder.Services.AddHealthChecks();
 
@@ -56,6 +62,49 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
+
+app.MapGet("/GetData",  [Authorize] 
+async Task<IResult> (IDataRepository repository, HttpContext httpContext, ILogger<Program> logger) =>
+{
+
+    try
+    {
+        string? token = await httpContext.GetTokenAsync("access_token");
+
+        if (token == null)
+        {
+            return Results.Forbid();
+        }
+
+        var result = await repository.listData(token);
+
+        if (result == null)
+        {
+            return Results.BadRequest();
+        }
+
+        return Results.Ok(result);
+
+    }
+    catch (AmazonS3Exception ex)
+    {
+        logger.LogError(ex.Message);
+        return Results.Forbid();
+
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex.Message);
+        return Results.Problem();
+
+    }
+
+ //   return Results.Ok(result);
+})
+.WithName("GetData")
+.WithOpenApi();
+
+
 app.MapGet("/weatherforecast", [Authorize] () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
@@ -87,4 +136,7 @@ record RbacConfig
     public string IdentityPoolId { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;
     public string ClientSecret { get; set; } = string.Empty;
+    public string Region { get; set; } = string.Empty;
+    public string BucketName { get; set; } = string.Empty;
+
 }
