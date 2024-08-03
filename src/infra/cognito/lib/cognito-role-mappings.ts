@@ -2,8 +2,9 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
-import { CfnOutput } from "aws-cdk-lib";
+import { Stack, CfnOutput } from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
 export interface CongnitoRoleMappingsStack extends cdk.StackProps {
   IdentityPoolId: string;
@@ -11,23 +12,41 @@ export interface CongnitoRoleMappingsStack extends cdk.StackProps {
   ListRoleArn: string;
   UserPoolId: string;
   ClientId: string;
+  WebClient: cdk.aws_cognito.UserPoolClient;
+  UserPool: cdk.aws_cognito.UserPool;
+  IdentityPool: cdk.aws_cognito.CfnIdentityPool;
 }
 
 export class CognitoRoleMappingsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: CongnitoRoleMappingsStack) {
     super(scope, id, props);
 
+    const region = Stack.of(this).region;
+
     const bucket = new s3.Bucket(this, "MyBucket", {
       versioned: true, // Enable versioning
       removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
       enforceSSL: true,
       publicReadAccess: false,
+      autoDeleteObjects: true,
     });
 
-    const bucketSSM = new StringParameter(this, "bucketName", {
-      stringValue: bucket.bucketName,
-      parameterName: "/security/oauth20/rbac/bucket",
+    const secret = new Secret(this, "web-api-secrets", {
+      secretName: "web-api-secrets",
+      secretObjectValue: {
+        Authority: cdk.SecretValue.unsafePlainText(
+          `https://cognito-idp.${region}.amazonaws.com/${props.UserPool.userPoolId}`
+        ),
+        IdentityPoolId: cdk.SecretValue.unsafePlainText(props.IdentityPool.ref),
+        ClientId: cdk.SecretValue.unsafePlainText(
+          props.WebClient.userPoolClientId
+        ),
+        ClientSecret: props.WebClient.userPoolClientSecret,
+        Region: cdk.SecretValue.unsafePlainText(region),
+        BucketName: cdk.SecretValue.unsafePlainText(bucket.bucketName),
+      },
     });
+     
 
     const listGroup2 = new cognito.CfnUserPoolGroup(this, "listGroup2", {
       userPoolId: props.UserPoolId,

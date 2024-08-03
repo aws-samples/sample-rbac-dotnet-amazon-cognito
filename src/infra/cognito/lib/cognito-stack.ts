@@ -9,6 +9,9 @@ export class CognitoStack extends cdk.Stack {
   IdentityPoolId: string;
   UserPoolId: string;
   ClientId: string;
+  WebClient: cdk.aws_cognito.UserPoolClient;
+  UserPool: cdk.aws_cognito.UserPool;
+  IdentityPool: cdk.aws_cognito.CfnIdentityPool;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -53,7 +56,9 @@ export class CognitoStack extends cdk.Stack {
 
     const webApiClient = userpool.addClient("web-api-client", {
       generateSecret: true,
+      
       oAuth: {
+        callbackUrls: callbacks,
         scopes: [
           OAuthScope.PHONE,
           OAuthScope.EMAIL,
@@ -116,19 +121,7 @@ export class CognitoStack extends cdk.Stack {
       },
     });
 
-    new Secret(this, "web-api-secrets", {
-      secretName: "web-api-secrets",
-      secretObjectValue: {
-        Authority: cdk.SecretValue.unsafePlainText(
-          `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`
-        ),
-        IdentityPoolId: cdk.SecretValue.unsafePlainText(identityPool.ref),
-        ClientId: cdk.SecretValue.unsafePlainText(
-          webApiClient.userPoolClientId
-        ),
-        ClientSecret: webApiClient.userPoolClientSecret,
-      },
-    });
+  
 
     new CfnOutput(this, "Authority", {
       value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
@@ -140,5 +133,9 @@ export class CognitoStack extends cdk.Stack {
     this.ClientId = webPageClient.userPoolClientId;
     this.UserPoolId = userpool.userPoolId;
     this.IdentityPoolId = identityPool.ref;
+    this.WebClient = webApiClient;
+    this.UserPool = userpool;
+    this.IdentityPool = identityPool;
+  
   }
 }
