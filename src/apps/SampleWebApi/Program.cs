@@ -105,6 +105,58 @@ async Task<IResult> (IDataRepository repository, HttpContext httpContext, ILogge
 .WithOpenApi();
 
 
+app.MapPost("/WriteData", [Authorize]
+async Task<IResult> (HttpRequest request, IDataRepository repository, HttpContext httpContext, ILogger<Program> logger) =>
+
+{
+
+    try
+    {
+
+        var content = await request.ReadFormAsync();
+
+        var key = content.Keys.First();
+        var data = content[key];
+
+        SecretsManagerCache secretsManager = new();
+        string clientSecret = secretsManager.GetSecretString("web-api-secrets").Result ?? "{}";
+        var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
+
+        string? bucketName = idConfig.BucketName;
+
+        string? token = await httpContext.GetTokenAsync("access_token");
+
+        if (token == null)
+        {
+            return Results.Forbid();
+        }
+
+        var result = await repository.writeData(token, bucketName, "bucketKey", data); ;
+
+      
+        return Results.Ok(result);
+
+    }
+    catch (AmazonS3Exception ex)
+    {
+        logger.LogError(ex.Message);
+        return Results.Forbid();
+
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex.Message);
+        return Results.Problem();
+
+    }
+
+    //   return Results.Ok(result);
+})
+.WithName("WriteData")
+.WithOpenApi();
+
+
+
 app.MapGet("/weatherforecast", [Authorize] () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
