@@ -4,6 +4,7 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import { OAuthScope } from "aws-cdk-lib/aws-cognito";
 import { Stack, CfnOutput } from "aws-cdk-lib";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 export class CognitoStack extends cdk.Stack {
   IdentityPoolId: string;
@@ -19,6 +20,21 @@ export class CognitoStack extends cdk.Stack {
     const poolName = "rbacauthz";
     const region = Stack.of(this).region;
     const callBack = this.node.tryGetContext("callback");
+
+
+       
+  
+ const bucket = new s3.Bucket(this, "MyBucket", {
+  versioned: true, // Enable versioning
+  removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+  enforceSSL: true,
+  publicReadAccess: false,
+  autoDeleteObjects: true,
+});
+
+
+
+
 
     const userpool = new cognito.UserPool(this, "rbacUserPool", {
       userPoolName: poolName,
@@ -118,6 +134,8 @@ export class CognitoStack extends cdk.Stack {
           webPageClient.userPoolClientId
         ),
         ClientSecret: webPageClient.userPoolClientSecret,
+        Region: cdk.SecretValue.unsafePlainText(region),
+        
       },
     });
 
