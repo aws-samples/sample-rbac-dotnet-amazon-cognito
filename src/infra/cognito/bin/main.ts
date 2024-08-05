@@ -17,14 +17,9 @@ const iamStack: IamStack = new IamStack(app, "rbac-demo-iam-stack", {
   IdentityPoolId: cognitoStack.IdentityPoolId,
 });
 
-new CognitoRoleMappingsStack(app, "rbac-demo-role-mappings-stack", {
-  IdentityPoolId: cognitoStack.IdentityPoolId,
-  UserPoolId: cognitoStack.UserPoolId,
-  ClientId: cognitoStack.ClientId,
-  WriteRoleArn: iamStack.WriteRoleArn,
-  ListRoleArn: iamStack.ListRoleArn,
-  WebClient: cognitoStack.WebClient, 
-  UserPool: cognitoStack.UserPool,
-  IdentityPool: cognitoStack.IdentityPool,
- 
+iamStack.addDependency(cognitoStack);
+
+cognitoMapping = new CognitoRoleMappingsStack(app, "rbac-demo-role-mappings-stack", {
 });
+
+

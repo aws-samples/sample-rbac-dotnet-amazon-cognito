@@ -135,7 +135,7 @@ export class CognitoStack extends cdk.Stack {
         ),
         ClientSecret: webPageClient.userPoolClientSecret,
         Region: cdk.SecretValue.unsafePlainText(region),
-        
+
       },
     });
 
@@ -148,12 +148,67 @@ export class CognitoStack extends cdk.Stack {
       exportName: "Auth",
     });
 
-    this.ClientId = webPageClient.userPoolClientId;
+
+   /*  this.ClientId = webPageClient.userPoolClientId;
     this.UserPoolId = userpool.userPoolId;
     this.IdentityPoolId = identityPool.ref;
     this.WebClient = webApiClient;
     this.UserPool = userpool;
-    this.IdentityPool = identityPool;
+    this.IdentityPool = identityPool; */
   
+
+
+    new CfnOutput(this, "AuthenticationURL", {
+      value: `https://${domainName}.auth.${region}.amazoncognito.com/login?response_type=code&client_id=${webPageClient.userPoolClientId}&scope=phone email openid profile aws.cognito.signin.user.admin&redirect_uri=${callBack}`,
+      description:
+        "AuthenticationURL",
+      exportName: "AuthenticationURL",
+    });
+    
+
+    new CfnOutput(this, "Authority", {
+      value: `https://cognito-idp.${region}.amazonaws.com/${userpool.userPoolId}`,
+      description:
+        "Authority name used for authorithy check by resource servers",
+      exportName: "Auth",
+    });
+
+
+    new CfnOutput(this, "AccesstokenURL", {
+      value: `https://${domainName}.auth.${region}.amazoncognito.com/oauth2/token`,
+      description: "Access token URL",
+      exportName: "TokenUrl",
+    });
+
+    new CfnOutput(this, "ClientId", {
+      value: webPageClient.userPoolClientId,
+      description: "client Id for Oauth flow",
+      exportName: "CId",
+    });
+
+    new CfnOutput(this, '"IdentityPoolId', {
+      value: identityPool.ref,
+      description: "id of IdentityPool",
+      exportName: "iPoolId",
+    });
+
+    new CfnOutput(this, '"providerName', {
+      value: userpool.userPoolProviderName,
+      description: "providerName",
+      exportName: "providerName",
+    });
+
+
+    
+    new CfnOutput(this, '"poolid', {
+      value: userpool.userPoolId,
+      description: "upoolId",
+      exportName: "upoolId",
+    });
+
+
+
+
+
   }
 }
