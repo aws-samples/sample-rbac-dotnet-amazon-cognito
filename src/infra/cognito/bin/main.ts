@@ -7,19 +7,24 @@ import { CognitoRoleMappingsStack } from "../lib/cognito-role-mappings";
 
 const app = new cdk.App();
 
-const cognitoStack: CognitoStack = new CognitoStack(
+
+const cognitoStack: CognitoStack = new CognitoStack(app, "congnitoStack", {
+  env: { region: region },
+});
+
+const iamStack: IamStack = new IamStack(app, "iamStack", {
+  env: { region: region },
+});
+
+const cognitorolemappings: CognitoRoleMappingsStack = new CognitoRoleMappingsStack(
   app,
-  "rbac-demo-congnito-stack",
-  {}
+  "cognitoRoleMappingsStack",
+  {
+    env: { region: region },
+  }
 );
 
-const iamStack: IamStack = new IamStack(app, "rbac-demo-iam-stack", {
-  IdentityPoolId: cognitoStack.IdentityPoolId,
-});
-
 iamStack.addDependency(cognitoStack);
-
-cognitoMapping = new CognitoRoleMappingsStack(app, "rbac-demo-role-mappings-stack", {
-});
+cognitorolemappings.addDependency(iamStack);
 
 
