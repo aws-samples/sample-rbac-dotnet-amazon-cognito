@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { CfnOutput } from "aws-cdk-lib";
 
 import {
   ManagedPolicy,
@@ -8,18 +9,13 @@ import {
   PolicyDocument,
 } from "aws-cdk-lib/aws-iam";
 
-export interface IamStackProps extends cdk.StackProps {
-  IdentityPoolId: string;
-}
-
 export class IamStack extends cdk.Stack {
-  WriteRoleArn: string;
-  ListRoleArn: string;
-
-  constructor(scope: Construct, id: string, props: IamStackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const uniq = new Date().getTime();
+
+    const identityPoolId = cdk.Fn.importValue("iPoolId");
 
     const listpolicyDocument = {
       Version: "2012-10-17",
@@ -39,12 +35,13 @@ export class IamStack extends cdk.Stack {
       document: listcustomPolicyDocument,
     });
 
-    const s3ListRole = new Role(this, "s3-list-role", {
-      roleName: "s3-list-role" + uniq,
+    const s3ListRole = new Role(this, "s3listrole", {
+      roleName: "s3listrole" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
-          "cognito-identity.amazonaws.com:aud": `${props.IdentityPoolId}`,
+          "cognito-identity.amazonaws.com:aud": `${identityPoolId}`,       
         },
+      
         "ForAnyValue:StringLike": {
           "cognito-identity.amazonaws.com:amr": "authenticated",
         },
@@ -72,11 +69,11 @@ export class IamStack extends cdk.Stack {
       document: writecustomPolicyDocument,
     });
 
-    const s3WriteRole = new Role(this, "s3-Write-role", {
+    const s3WriteRole = new Role(this, "s3Writetrole", {
       roleName: "s3writerole" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
-          "cognito-identity.amazonaws.com:aud": `${props.IdentityPoolId}`,
+          "cognito-identity.amazonaws.com:aud": `${identityPoolId}`,
         },
         "ForAnyValue:StringLike": {
           "cognito-identity.amazonaws.com:amr": "authenticated",
@@ -86,7 +83,16 @@ export class IamStack extends cdk.Stack {
 
     s3WriteRole.addManagedPolicy(writePolicy);
 
-    this.ListRoleArn = s3ListRole.roleArn;
-    this.WriteRoleArn = s3WriteRole.roleArn;
+    new CfnOutput(this, "listRoleArn", {
+      value: s3ListRole.roleArn,
+      description: "role arn for list role",
+      exportName: "listRoleArn",
+    });
+
+    new CfnOutput(this, "writeRoleArn", {
+      value: s3WriteRole.roleArn,
+      description: "role arn for list role",
+      exportName: "writeRoleArn",
+    });
   }
 }

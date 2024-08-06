@@ -5,7 +5,7 @@ import { OAuthScope } from "aws-cdk-lib/aws-cognito";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Stack, CfnOutput } from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
-
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
 
 export class CognitoRoleMappingsStack extends cdk.Stack {
@@ -30,8 +30,23 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
       versioned: true,   // Enable versioning
       removalPolicy: cdk.RemovalPolicy.DESTROY,  // NOT recommended for production code
       enforceSSL: true, 
-      publicReadAccess: false
+      publicReadAccess: false,
+      autoDeleteObjects: true,
     });
+
+
+    new Secret(this, "api-secrets", {
+      secretName: "api-secrets",
+      secretObjectValue: {
+        BucketName: cdk.SecretValue.unsafePlainText(
+         bucket.bucketName
+        ),
+   
+        Region: cdk.SecretValue.unsafePlainText(region),
+
+      },
+    });
+
 
     const bucketSSM = new StringParameter(this, "bucketName", {
       stringValue: bname,
@@ -119,4 +134,17 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
         exportName: "IPoolID",
       });
 
- 
+   
+  
+
+   
+   
+
+}
+
+
+
+
+}
+
+  
