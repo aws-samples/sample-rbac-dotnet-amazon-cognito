@@ -1,18 +1,25 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Amazon.SecretsManager;
 using Amazon.SecretsManager.Extensions.Caching;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using WebPage.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonSecretsManager>();
+builder.Services.AddSingleton<SecretsManagerCache>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -61,19 +68,6 @@ builder.Services.AddAuthentication(options =>
     });
 
 
-Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
-{
-    SecretsManagerCache secretsManager = new();
-    string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
-    var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
-
-    context.ProtocolMessage.ResponseType = OpenIdConnectResponseType.Code;
-    var logoutUrl = $"{context.Request.Scheme}://{context.Request.Host}/";
-
-    context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
-    return Task.CompletedTask;
-}
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -94,24 +88,39 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.MapGet("SignOut", static async (HttpContext httpContext, [FromServices] OpenIdConnectHandler idConnnect) =>
+
+//Accounts endpoints
+app.MapGet("signOut", static async (HttpContext httpContext, [FromServices] OpenIdConnectHandler idConnnect) =>
 {
     var props = (await httpContext.AuthenticateAsync()).Properties;
 
-    await httpContext.SignOutAsync(props);
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, props);
     await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, props);
     return Results.SignOut(props);
 
 });
 
+app.MapGet("token", [Authorize] async (HttpContext httpContext) =>
+{
+    return await httpContext.GetTokenAsync("access_token");
+});
+
+/// <summary>
+/// Build the URI for Cognito SignOut
+/// </summary>
+/// <param name="context"></param>
+/// <returns></returns>
+Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
+{
+    var secretsManager = context.HttpContext.RequestServices.GetService<SecretsManagerCache>() ?? new SecretsManagerCache();
+    string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
+    var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
+
+    context.ProtocolMessage.ResponseType = OpenIdConnectResponseType.Code;
+    var logoutUrl = $"{context.Request.Scheme}://{context.Request.Host}/";
+
+    context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
+    return Task.CompletedTask;
+}
 
 await app.RunAsync();
-
-record RbacConfig
-{
-    public string Authority { get; set; } = string.Empty;
-    public string IdentityPoolId { get; set; } = string.Empty;
-    public string ClientId { get; set; } = string.Empty;
-    public string ClientSecret { get; set; } = string.Empty;
-}
