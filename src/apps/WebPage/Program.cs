@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonSecretsManager>();
@@ -25,10 +26,11 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
-// Add services to the container.
+
 builder.Services.AddHttpClient("BackendAPIClient", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("https://localhost:7229");
+    var backend_url = Environment.GetEnvironmentVariable("BACKEND_URL") ?? "https://localhost:7229";
+    httpClient.BaseAddress = new Uri(backend_url);
     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "WebPage");
 });
@@ -54,7 +56,7 @@ builder.Services.AddAuthentication(options =>
         options.Authority = idConfig.Authority;
         options.CallbackPath = "/signin-oidc";
         options.ResponseType = OpenIdConnectResponseType.Code;
-        options.SignedOutCallbackPath = "/signed-oidc";
+        options.SignedOutCallbackPath = "/signedout-oidc";
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -122,5 +124,7 @@ Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
     context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
     return Task.CompletedTask;
 }
+
+app.UseHealthChecks("/healthz");
 
 await app.RunAsync();
