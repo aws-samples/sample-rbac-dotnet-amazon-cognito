@@ -63,7 +63,7 @@ var summaries = new[]
 };
 
 
-app.MapGet("/GetData",  [Authorize] 
+app.MapGet("/GetData", [Authorize]
 async Task<IResult> (IDataRepository repository, HttpContext httpContext, ILogger<Program> logger) =>
 {
 
@@ -99,7 +99,7 @@ async Task<IResult> (IDataRepository repository, HttpContext httpContext, ILogge
 
     }
 
- //   return Results.Ok(result);
+    //   return Results.Ok(result);
 })
 .WithName("GetData")
 .WithOpenApi();
@@ -133,7 +133,7 @@ async Task<IResult> (HttpRequest request, IDataRepository repository, HttpContex
 
         var result = await repository.writeData(token, bucketName, "bucketKey", data); ;
 
-      
+
         return Results.Ok(result);
 
     }
