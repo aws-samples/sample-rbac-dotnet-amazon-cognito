@@ -1,27 +1,37 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Amazon.SecretsManager;
 using Amazon.SecretsManager.Extensions.Caching;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using WebPage.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddHealthChecks();
+
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonSecretsManager>();
+builder.Services.AddSingleton<SecretsManagerCache>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
-// Add services to the container.
+
 builder.Services.AddHttpClient("BackendAPIClient", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("https://localhost:7229");
+    var backend_url = Environment.GetEnvironmentVariable("BACKEND_URL") ?? "https://localhost:7229";
+    httpClient.BaseAddress = new Uri(backend_url);
     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "WebPage");
 });
@@ -49,6 +59,8 @@ builder.Services.AddAuthentication(options =>
         options.ResponseType = OpenIdConnectResponseType.Code;
         options.SignedOutCallbackPath = "/signed-oidc";
 
+        options.SignedOutCallbackPath = "/signedout-oidc";
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -58,6 +70,11 @@ builder.Services.AddAuthentication(options =>
         {
             OnRedirectToIdentityProviderForSignOut = OnRedirectToIdentityProviderForSignOut
         };
+    });
+options.Events = new OpenIdConnectEvents
+{
+    OnRedirectToIdentityProviderForSignOut = OnRedirectToIdentityProviderForSignOut
+};
     });
 
 
@@ -73,6 +90,7 @@ Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
     context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
     return Task.CompletedTask;
 }
+
 
 var app = builder.Build();
 
@@ -94,24 +112,41 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.MapGet("SignOut", static async (HttpContext httpContext, [FromServices] OpenIdConnectHandler idConnnect) =>
+
+//Accounts endpoints
+app.MapGet("signOut", static async (HttpContext httpContext, [FromServices] OpenIdConnectHandler idConnnect) =>
 {
     var props = (await httpContext.AuthenticateAsync()).Properties;
 
-    await httpContext.SignOutAsync(props);
-    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, props);
+    await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, props);
     return Results.SignOut(props);
 
 });
 
+app.MapGet("token", [Authorize] async (HttpContext httpContext) =>
+{
+    return await httpContext.GetTokenAsync("access_token");
+});
+
+/// <summary>
+/// Build the URI for Cognito SignOut
+/// </summary>
+/// <param name="context"></param>
+/// <returns></returns>
+Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
+{
+    var secretsManager = context.HttpContext.RequestServices.GetService<SecretsManagerCache>() ?? new SecretsManagerCache();
+    string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
+    var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
+
+    context.ProtocolMessage.ResponseType = OpenIdConnectResponseType.Code;
+    var logoutUrl = $"{context.Request.Scheme}://{context.Request.Host}/";
+
+    context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
+    return Task.CompletedTask;
+}
+
+app.UseHealthChecks("/healthz");
 
 await app.RunAsync();
-
-record RbacConfig
-{
-    public string Authority { get; set; } = string.Empty;
-    public string IdentityPoolId { get; set; } = string.Empty;
-    public string ClientId { get; set; } = string.Empty;
-    public string ClientSecret { get; set; } = string.Empty;
-}

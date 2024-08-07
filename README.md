@@ -50,15 +50,10 @@ Assign passwords for the users listuser, reader writeuser created by the cognito
 Note: the flag —permanent is passed. Use —temporary to allow users to change the password on first login
 
 ```bash
-aws cognito-idp
-admin-set-user-password --user-pool-id 
-poolId --username listuser
---password yourPassword --permanent
+export USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 10 |  jq ".UserPools[] | select(.Name == \"rbacauthz\") | .Id" -r)
 
-aws cognito-idp
-admin-set-user-password --user-pool-id 
-poolId --username writeuser 
---password yourPassword --permanent
+aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username listuser --pass REPLACE_THIS_PLACEHOLDER_PASSWORD --permanent
+aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username writeuser --pass REPLACE_THIS_PLACEHOLDER_PASSWORD --permanent
 ```
 
 ### Create a bucket for testing
