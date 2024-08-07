@@ -182,7 +182,17 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
 
-record RbacConfig
+
+
+record ResourceConfig
+{
+    public string BucketName { get; set; } = string.Empty;
+    public string Region { get; set; } = string.Empty;
+}
+
+
+
+    record RbacConfig
 {
     public string Authority { get; set; } = string.Empty;
     public string IdentityPoolId { get; set; } = string.Empty;

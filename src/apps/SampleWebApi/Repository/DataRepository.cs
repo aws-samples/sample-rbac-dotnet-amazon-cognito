@@ -34,14 +34,16 @@ namespace ApiRbac.Repository
             // Cognito isuer that is the authorirty 
             // they are used in CognitoAWSCredentials and addLogin
             SecretsManagerCache secretsManager = new();
-            string clientSecret = secretsManager.GetSecretString("web-api-secrets").Result ?? "{}";
+            string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
             var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
+            var clientSecretIdp = secretsManager.GetSecretString("api-secrets").Result ?? "{}";
+            var ridConfig  = JsonSerializer.Deserialize<ResourceConfig>(clientSecret) ?? new();
 
             //   string? issuer = configuration["oauth20:rbac:authority"];
             //string? identityPool = configuration["oauth20:rbac:identitypoolid"];
             string? identityPool = idConfig.IdentityPoolId;
             string? issuer = idConfig.Authority;
-            string? region = idConfig.Region;
+            string? region = ridConfig.Region;
 
         
             if (issuer == null || identityPool == null)
