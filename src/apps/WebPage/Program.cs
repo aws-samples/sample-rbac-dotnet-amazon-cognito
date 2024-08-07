@@ -1,8 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Amazon.SecretsManager.Extensions.Caching;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -45,12 +47,32 @@ builder.Services.AddAuthentication(options =>
         options.Authority = idConfig.Authority;
         options.CallbackPath = "/signin-oidc";
         options.ResponseType = OpenIdConnectResponseType.Code;
+        options.SignedOutCallbackPath = "/signed-oidc";
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
         };
         options.SaveTokens = true;
+        options.Events = new OpenIdConnectEvents
+        {
+            OnRedirectToIdentityProviderForSignOut = OnRedirectToIdentityProviderForSignOut
+        };
     });
+
+
+Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
+{
+    SecretsManagerCache secretsManager = new();
+    string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
+    var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
+
+    context.ProtocolMessage.ResponseType = OpenIdConnectResponseType.Code;
+    var logoutUrl = $"{context.Request.Scheme}://{context.Request.Host}/";
+
+    context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
+    return Task.CompletedTask;
+}
 
 var app = builder.Build();
 
@@ -71,6 +93,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+app.MapGet("SignOut", static async (HttpContext httpContext, [FromServices] OpenIdConnectHandler idConnnect) =>
+{
+    var props = (await httpContext.AuthenticateAsync()).Properties;
+
+    await httpContext.SignOutAsync(props);
+    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, props);
+    await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, props);
+    return Results.SignOut(props);
+
+});
 
 
 await app.RunAsync();
