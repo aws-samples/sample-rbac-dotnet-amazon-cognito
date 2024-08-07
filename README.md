@@ -52,8 +52,8 @@ Note: the flag —permanent is passed. Use —temporary to allow users to change
 ```bash
 export USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 10 |  jq ".UserPools[] | select(.Name == \"rbacauthz\") | .Id" -r)
 
-aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username listuser --pass "REPLACE_THIS_PLACEHOLDER_PASSWORD" --permanent
-aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username writeuser --pass "REPLACE_THIS_PLACEHOLDER_PASSWORD" --permanent
+aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username listuser --pass REPLACE_THIS_PLACEHOLDER_PASSWORD --permanent
+aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username writeuser --pass REPLACE_THIS_PLACEHOLDER_PASSWORD --permanent
 ```
 
 ### Create a bucket for testing
