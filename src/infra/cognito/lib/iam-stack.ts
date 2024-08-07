@@ -19,8 +19,6 @@ export class IamStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: IamStackProps) {
     super(scope, id, props);
 
-    const uniq = new Date().getTime();
-
     const listpolicyDocument = {
       Version: "2012-10-17",
       Statement: [
@@ -40,7 +38,6 @@ export class IamStack extends cdk.Stack {
     });
 
     const s3ListRole = new Role(this, "s3-list-role", {
-      roleName: "s3-list-role" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
           "cognito-identity.amazonaws.com:aud": `${props.IdentityPoolId}`,
@@ -73,7 +70,6 @@ export class IamStack extends cdk.Stack {
     });
 
     const s3WriteRole = new Role(this, "s3-Write-role", {
-      roleName: "s3writerole" + uniq,
       assumedBy: new WebIdentityPrincipal("cognito-identity.amazonaws.com", {
         StringEquals: {
           "cognito-identity.amazonaws.com:aud": `${props.IdentityPoolId}`,

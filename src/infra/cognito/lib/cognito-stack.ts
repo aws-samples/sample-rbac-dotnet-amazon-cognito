@@ -15,7 +15,6 @@ export class CognitoStack extends cdk.Stack {
 
     const poolName = "rbacauthz";
     const region = Stack.of(this).region;
-    const callBack = this.node.tryGetContext("callback");
 
     const userpool = new cognito.UserPool(this, "rbacUserPool", {
       userPoolName: poolName,
@@ -23,9 +22,17 @@ export class CognitoStack extends cdk.Stack {
     });
 
     const callbacks: string[] = [
-      "https://localhost:7017/signin-oidc",
       "http://localhost:7017/signin-oidc",
-      callBack,
+      "https://localhost:7016/signin-oidc",
+      "https://localhost:7017/signin-oidc",
+      "https://localhost:7176/home/signinoidc",
+    ];
+
+    const signoutURLs: string[] = [
+      "https://localhost:7016/",
+      "https://localhost:7016/SignOut",
+      "https://localhost:7017/",
+      "https://localhost:7017/SignOut",
     ];
 
     const webPageClient = userpool.addClient("web-page-client", {
@@ -42,6 +49,7 @@ export class CognitoStack extends cdk.Stack {
           OAuthScope.PROFILE,
           OAuthScope.COGNITO_ADMIN,
         ],
+        logoutUrls: signoutURLs,
       },
       authFlows: {
         adminUserPassword: true,
