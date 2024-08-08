@@ -1,7 +1,0 @@
-*.d.ts
-*.js
-!jest.config.js
-node_modules
-dist/
-build/
-__snapshots__/
