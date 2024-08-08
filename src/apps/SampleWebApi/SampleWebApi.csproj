@@ -7,10 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.CognitoIdentity" Version="3.7.400.2" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.400.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6" />
     <PackageReference Include="Microsoft.Identity.Web" Version="3.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="AWSSDK.SecretsManager.Caching" Version="1.0.6" />
+
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.400.3" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />
+
   </ItemGroup>
 
 </Project>

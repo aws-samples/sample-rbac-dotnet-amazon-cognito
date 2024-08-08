@@ -3,13 +3,27 @@ using Amazon.SecretsManager.Extensions.Caching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication;
+using Amazon.S3;
+using Amazon.SecretsManager;
+using SampleWebApi.Contracts;
+using Microsoft.AspNetCore.Mvc;
+using SampleWebApi.Repository;
+using SampleWebApi.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Environment.SetEnvironmentVariable("BUCKET_NAME", "rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat");
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// dependency injection for DataRepositoty layer
+builder.Services.AddTransient<IDataRepository, DataRepository>();
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+builder.Services.AddAWSService<IAmazonSecretsManager>();
+builder.Services.AddSingleton<SecretsManagerCache>();
 
 builder.Services.AddHealthChecks();
 
@@ -23,7 +37,7 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(options =>
 {
     SecretsManagerCache secretsManager = new();
-    string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
+    string clientSecret = secretsManager.GetSecretString("web-api-secrets").Result ?? "{}";
     var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
 
     options.Authority = idConfig.Authority;
@@ -51,40 +65,78 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/GetData", [Authorize] async Task<IResult> (
+    IDataRepository repository,
+    HttpContext httpContext,
+    ILogger<Program> logger) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    IList<string> result = [];
+    try
+    {
+        string? token = await httpContext.GetTokenAsync("access_token");
 
-app.MapGet("/weatherforecast", [Authorize] () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+        if (httpContext.User.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(token))
+        {
+            return Results.Forbid();
+        }
+
+        result = await repository.ListData(token);
+
+        if (result == null)
+        {
+            return Results.BadRequest();
+        }
+    }
+    catch (AmazonS3Exception ex)
+    {
+        logger.LogError(message: "Fail to list buckets", exception: ex);
+        return Results.Forbid();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(message: "Fail to list buckets", exception: ex);
+        return Results.Problem();
+    }
+
+    return Results.Ok(result);
 })
-.WithName("GetWeatherForecast")
+.WithName("GetData")
+.WithOpenApi();
+
+
+app.MapPost("/WriteData", [Authorize] async Task<IResult> (
+    [FromBody] Book book,
+    IDataRepository repository,
+    HttpContext httpContext,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        string? token = await httpContext.GetTokenAsync("access_token");
+        if (httpContext.User.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(token))
+        {
+            return Results.Forbid();
+        }
+
+        var result = await repository.WriteData(token, book);
+
+        return Results.Ok(result);
+    }
+    catch (AmazonS3Exception ex)
+    {
+        logger.LogError(message: "Fail write to the bucket", exception: ex);
+        return Results.Forbid();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(message: "Fail write to the bucket", exception: ex);
+        return Results.Problem();
+    }
+})
+.WithName("WriteData")
 .WithOpenApi();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 await app.RunAsync();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-record RbacConfig
-{
-    public string Authority { get; set; } = string.Empty;
-    public string IdentityPoolId { get; set; } = string.Empty;
-    public string ClientId { get; set; } = string.Empty;
-    public string ClientSecret { get; set; } = string.Empty;
-}

@@ -21,8 +21,9 @@ public class User : PageModel
 
     public async Task OnGetAsync()
     {
-        var token = await HttpContext.GetTokenAsync("access_token");
+        var token = await HttpContext.GetTokenAsync("id_token");
         backendHttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-        Forecasts = (await backendHttpClient.GetFromJsonAsync<IList<WeatherForecast>>("/weatherforecast")) ?? [];
+        // Forecasts = (await backendHttpClient.GetFromJsonAsync<IList<WeatherForecast>>("/weatherforecast")) ?? [];
+        _logger.LogInformation("Token: {Token}", token);
     }
 }
