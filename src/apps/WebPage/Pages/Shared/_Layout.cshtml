@@ -25,16 +25,17 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Books/Index">Books</a>
                         </li>
                     </ul>
                     @if (User == null || User.Identity == null || !User.Identity.IsAuthenticated)
                     {
-                        <a class="btn-inline my-2 my-lg-0" asp-area="" asp-page="/user">LogIn</a>
+                        <a class="btn-inline my-2 my-lg-0" asp-area="" asp-page="./account/user">LogIn</a>
                     }
                     else
                     {
-                        <a class="btn-inline my-2 my-lg-0" href="/signOut">LogOut</a>
+                        <span>@User.Claims.First(c => c.Type == "cognito:username").Value &nbsp;</span>  
+                        <a class="btn-inline my-2 my-lg-0 ml-2" href="/signOut">LogOut</a>
                     }
 
                 </div>

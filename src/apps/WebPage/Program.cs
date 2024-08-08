@@ -36,7 +36,12 @@ builder.Services.AddHttpClient("BackendAPIClient", httpClient =>
 });
 
 // Add Authentication and Authorization services
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ReaderOnly", policy => policy.RequireClaim("cognito:groups", "reader"));
+    options.AddPolicy("WriterOnly", policy => policy.RequireClaim("cognito:groups", "write2"));
+});
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;

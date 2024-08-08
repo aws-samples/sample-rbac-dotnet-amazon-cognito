@@ -1,5 +1,5 @@
 @page
-@model WebPage.Pages.User
+@model WebPage.Pages.Account.User
 @{
     ViewData["Title"] = "User";
     var claims = HttpContext.User.Claims.Select(c => new { c.Type, c.Value }).ToList();

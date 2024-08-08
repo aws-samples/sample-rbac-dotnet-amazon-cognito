@@ -1,0 +1,43 @@
+@page
+@model WebPage.Pages.Books.CreatePage
+@{
+    ViewData["Title"] = "New Book";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="container">
+    <form method="post">
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" class="form-control" id="title" asp-for="BookForm!.Title"
+                        placeholder="Enter book title" required>
+                </div>
+                <div class="form-group">
+                    <label for="author">Author</label>
+                    <input type="text" class="form-control" id="author" asp-for="BookForm!.Author"
+                        placeholder="Enter author name" required>
+                </div>
+                <div class="form-group">
+                    <label for="genre">Genre</label>
+                    <input type="text" class="form-control" id="genre" asp-for="BookForm!.Genre"
+                        placeholder="Enter book genre" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" asp-for="BookForm!.Description" rows="5"
+                        placeholder="Enter book description" required></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col-xs-1 mt-3">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>

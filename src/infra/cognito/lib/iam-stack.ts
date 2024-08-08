@@ -23,10 +23,13 @@ export class IamStack extends cdk.Stack {
       Version: "2012-10-17",
       Statement: [
         {
-          Action: "s3:ListAllMyBuckets*",
-          Resource: "*",
+          Action: ["s3:GetObject", "s3:GetBucketLocation", "s3:ListBucket"],
+          Resource: [
+            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat/*",
+            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat",
+          ],
           Effect: "Allow",
-          Sid: "VisualEditor0",
+          Sid: "AllowRead",
         },
       ],
     };
@@ -54,10 +57,22 @@ export class IamStack extends cdk.Stack {
       Version: "2012-10-17",
       Statement: [
         {
-          Sid: "VisualEditor0",
+          Sid: "AllowWrite",
           Effect: "Allow",
           Action: ["s3:PutObject"],
-          Resource: "*",
+          Resource: [
+            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat/*",
+            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat",
+          ],
+        },
+        {
+          Action: ["s3:GetObject", "s3:GetBucketLocation", "s3:ListBucket"],
+          Resource: [
+            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat/*",
+            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat",
+          ],
+          Effect: "Allow",
+          Sid: "AllowRead",
         },
       ],
     };

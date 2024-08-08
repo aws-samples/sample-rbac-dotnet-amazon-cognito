@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebPage.Contracts;
 
-namespace WebPage.Pages;
+namespace WebPage.Pages.Account;
 
 [Authorize]
 public class User : PageModel
@@ -24,6 +24,6 @@ public class User : PageModel
         var token = await HttpContext.GetTokenAsync("id_token");
         backendHttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         // Forecasts = (await backendHttpClient.GetFromJsonAsync<IList<WeatherForecast>>("/weatherforecast")) ?? [];
-        _logger.LogInformation("Token: {Token}", token);
+        _logger.LogDebug("Token: {Token}", token);
     }
 }

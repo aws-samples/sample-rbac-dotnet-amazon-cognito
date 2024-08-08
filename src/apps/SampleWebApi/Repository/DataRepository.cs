@@ -20,6 +20,7 @@ public class DataRepository : IDataRepository
         this.configuration = configuration;
         this.logger = logger;
         this.secretsManager = secretsManager;
+        BucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
     }
 
     public string? BucketName { get; private set; }
@@ -49,7 +50,6 @@ public class DataRepository : IDataRepository
         bool succeed = false;
         byte[] memstring = JsonSerializer.SerializeToUtf8Bytes(data, new JsonSerializerOptions() { WriteIndented = true });
         CognitoAWSCredentials credentials = TradeCognitoToken(token);
-        BucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
 
         using (var memStream = new MemoryStream(memstring, true))
         {
