@@ -28,7 +28,11 @@ builder.Services.AddSingleton<SecretsManagerCache>();
 builder.Services.AddHealthChecks();
 
 //Add JWT
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ReaderOnlyRole", policy => policy.RequireClaim("cognito:groups", "reader", "write2"));
+    options.AddPolicy("WriterOnlyRole", policy => policy.RequireClaim("cognito:groups", "write2"));
+});
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,7 +69,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/GetData", [Authorize] async Task<IResult> (
+app.MapGet("/GetData", [Authorize(Policy = "ReaderOnlyRole")] async Task<IResult> (
     IDataRepository repository,
     HttpContext httpContext,
     ILogger<Program> logger) =>
@@ -104,7 +108,7 @@ app.MapGet("/GetData", [Authorize] async Task<IResult> (
 .WithOpenApi();
 
 
-app.MapPost("/WriteData", [Authorize] async Task<IResult> (
+app.MapPost("/WriteData", [Authorize(Policy = "WriterOnlyRole")] async Task<IResult> (
     [FromBody] Book book,
     IDataRepository repository,
     HttpContext httpContext,

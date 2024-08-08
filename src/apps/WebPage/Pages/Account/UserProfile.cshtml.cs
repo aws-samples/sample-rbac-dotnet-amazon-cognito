@@ -6,14 +6,14 @@ using WebPage.Contracts;
 namespace WebPage.Pages.Account;
 
 [Authorize]
-public class User : PageModel
+public class UserProfile : PageModel
 {
-    private readonly ILogger<User> _logger;
+    private readonly ILogger<UserProfile> _logger;
     private readonly HttpClient backendHttpClient;
 
     public IList<WeatherForecast> Forecasts { get; set; } = [];
 
-    public User(ILogger<User> logger, IHttpClientFactory httpClientFactory)
+    public UserProfile(ILogger<UserProfile> logger, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         backendHttpClient = httpClientFactory.CreateClient("BackendAPIClient");
