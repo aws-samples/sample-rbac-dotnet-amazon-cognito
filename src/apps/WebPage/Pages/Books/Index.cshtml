@@ -1,0 +1,31 @@
+@page
+@model WebPage.Pages.Books.Index
+@{
+    ViewData["Title"] = "Books";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="container">
+    <h2>List of objects from the S3 Bucket</h2>
+    <div class="table-responsive">
+
+    </div>
+    <table class="table table-striped table-sm">
+        <thead>
+            <th>
+                Files
+                <a class="btn btn-inline btn-primary" style="position: relative; float: inline-end; float: right;"
+                    asp-page="./CreatePage">Add new Book</a>
+            </th>
+        </thead>
+        @foreach (var item in Model.BooksData)
+        {
+            <tr>
+                <td>
+                    @item
+                </td>
+            </tr>
+        }
+    </table>
+</div>

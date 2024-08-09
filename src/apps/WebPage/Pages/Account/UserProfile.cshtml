@@ -1,0 +1,25 @@
+@page
+@model WebPage.Pages.Account.UserProfile
+@{
+    ViewData["Title"] = "User Profile (claims)";
+    var claims = HttpContext.User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    @foreach (var item in claims)
+    {
+        <p>
+            <span>@item.Type :</span>
+            <span>@item.Value</span>
+        </p>
+    }
+    <hr />
+    @foreach (var forecast in Model.Forecasts)
+    {
+        <p>
+            <span>Summary: @forecast.Summary</span>
+        </p>
+    }
+</div>

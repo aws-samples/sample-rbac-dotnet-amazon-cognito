@@ -27,16 +27,6 @@ cdk bootstrap --all
 cdk deploy --all
 ```
 
-The following output will be produced. Save this data for later user
-
-```bash
-congnitoStack.AccesstokenURL = accesstokenURL
-congnitoStack.AuthenticationURL = authenticationURL
-congnitoStack.Authority = Authority
-congnitoStack.IdentityPoolId = identityPoold
-congnitoStack.providerName = providerName
-```
-
 2. Obtain the client secret in the AWS console:
 2.1. Open AWS console select cognito.
 2.2. Click on User pools on the left select the user pool.
@@ -50,21 +40,10 @@ Assign passwords for the users listuser, reader writeuser created by the cognito
 Note: the flag —permanent is passed. Use —temporary to allow users to change the password on first login
 
 ```bash
-aws cognito-idp
-admin-set-user-password --user-pool-id 
-poolId --username listuser
---password yourPassword --permanent
+export USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 10 |  jq ".UserPools[] | select(.Name == \"rbacauthz\") | .Id" -r)
 
-aws cognito-idp
-admin-set-user-password --user-pool-id 
-poolId --username writeuser 
---password yourPassword --permanent
-```
-
-### Create a bucket for testing
-
-```bash
-aws s3api create-bucket --bucket bucketName --region region
+aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username bob --pass REPLACE_THIS_PLACEHOLDER_PASSWORD --permanent
+aws cognito-idp admin-set-user-password --user-pool-id $USER_POOL_ID --username sarah --pass REPLACE_THIS_PLACEHOLDER_PASSWORD --permanent
 ```
 
 ### PostMan Testing with an OAUTH2.0 Authorization Code Grant Flow
