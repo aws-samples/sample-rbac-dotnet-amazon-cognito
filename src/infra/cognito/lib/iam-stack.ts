@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 import {
   ManagedPolicy,
@@ -10,6 +11,7 @@ import {
 
 export interface IamStackProps extends cdk.StackProps {
   IdentityPoolId: string;
+  SampleBucket: s3.Bucket;
 }
 
 export class IamStack extends cdk.Stack {
@@ -25,8 +27,8 @@ export class IamStack extends cdk.Stack {
         {
           Action: ["s3:GetObject", "s3:GetBucketLocation", "s3:ListBucket"],
           Resource: [
-            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat/*",
-            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat",
+            props.SampleBucket.arnForObjects("*"),
+            props.SampleBucket.bucketArn,
           ],
           Effect: "Allow",
           Sid: "AllowRead",
@@ -61,15 +63,15 @@ export class IamStack extends cdk.Stack {
           Effect: "Allow",
           Action: ["s3:PutObject"],
           Resource: [
-            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat/*",
-            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat",
+            props.SampleBucket.arnForObjects("*"),
+            props.SampleBucket.bucketArn,
           ],
         },
         {
           Action: ["s3:GetObject", "s3:GetBucketLocation", "s3:ListBucket"],
           Resource: [
-            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat/*",
-            "arn:aws:s3:::rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat",
+            props.SampleBucket.arnForObjects("*"),
+            props.SampleBucket.bucketArn,
           ],
           Effect: "Allow",
           Sid: "AllowRead",

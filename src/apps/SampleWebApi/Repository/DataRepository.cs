@@ -20,10 +20,9 @@ public class DataRepository : IDataRepository
         this.configuration = configuration;
         this.logger = logger;
         this.secretsManager = secretsManager;
-        BucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
     }
 
-    public string? BucketName { get; private set; }
+    public string BucketName { get; private set; }
 
     public async Task<IList<string>> ListData(string token)
     {
@@ -68,9 +67,13 @@ public class DataRepository : IDataRepository
         string clientSecret = secretsManager.GetSecretString("web-page-secrets").Result ?? "{}";
         var idConfig = JsonSerializer.Deserialize<RbacConfig>(clientSecret) ?? new();
 
+        BucketName = idConfig.BucketName;
         string issuer = idConfig.Authority.Split("://")[1];
-        string region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-east-1";
-        var regionEndpoint = configuration.GetAWSOptions().Region ?? RegionEndpoint.GetBySystemName(region);
+        string region = idConfig.Region
+            ?? Environment.GetEnvironmentVariable("AWS_REGION")
+            ?? "us-east-1";
+
+        var regionEndpoint = RegionEndpoint.GetBySystemName(region);
         logger.LogInformation("Region: {Region}", regionEndpoint.ToString());
 
         var credentials = new CognitoAWSCredentials(idConfig.IdentityPoolId, regionEndpoint);

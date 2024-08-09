@@ -4,11 +4,13 @@ import * as cognito from "aws-cdk-lib/aws-cognito";
 import { OAuthScope } from "aws-cdk-lib/aws-cognito";
 import { Stack, CfnOutput } from "aws-cdk-lib";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 export class CognitoStack extends cdk.Stack {
   IdentityPoolId: string;
   UserPoolId: string;
   ClientId: string;
+  SampleBucket: s3.Bucket;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -80,16 +82,6 @@ export class CognitoStack extends cdk.Stack {
       },
     });
 
-    const listUser = new cognito.CfnUserPoolUser(this, "listPoolUser", {
-      userPoolId: userpool.userPoolId,
-      username: "listuser",
-    });
-
-    const writeUser = new cognito.CfnUserPoolUser(this, "writePoolUser", {
-      userPoolId: userpool.userPoolId,
-      username: "writeuser",
-    });
-
     const identityPool = new cognito.CfnIdentityPool(this, "IdentityPool", {
       allowUnauthenticatedIdentities: false,
 
@@ -107,8 +99,13 @@ export class CognitoStack extends cdk.Stack {
       ],
     });
 
-    identityPool.addDependency(listUser);
-    identityPool.addDependency(writeUser);
+    this.SampleBucket = new s3.Bucket(this, "sample-bucket", {
+      versioned: true, // Enable versioning
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+      autoDeleteObjects: true, // NOT recommended for production code
+      enforceSSL: true,
+      publicReadAccess: false,
+    });
 
     new Secret(this, "web-page-secrets", {
       secretName: "web-page-secrets",
@@ -120,6 +117,10 @@ export class CognitoStack extends cdk.Stack {
         ClientId: cdk.SecretValue.unsafePlainText(
           webPageClient.userPoolClientId
         ),
+        BucketName: cdk.SecretValue.unsafePlainText(
+          this.SampleBucket.bucketName
+        ),
+        Region: cdk.SecretValue.unsafePlainText(region),
         ClientSecret: webPageClient.userPoolClientSecret,
       },
     });
@@ -134,6 +135,10 @@ export class CognitoStack extends cdk.Stack {
         ClientId: cdk.SecretValue.unsafePlainText(
           webApiClient.userPoolClientId
         ),
+        BucketName: cdk.SecretValue.unsafePlainText(
+          this.SampleBucket.bucketName
+        ),
+        Region: cdk.SecretValue.unsafePlainText(region),
         ClientSecret: webApiClient.userPoolClientSecret,
       },
     });

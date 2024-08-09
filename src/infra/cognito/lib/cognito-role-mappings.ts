@@ -1,9 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
-import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { CfnOutput } from "aws-cdk-lib";
-import * as s3 from "aws-cdk-lib/aws-s3";
 
 export interface CongnitoRoleMappingsStack extends cdk.StackProps {
   IdentityPoolId: string;
@@ -17,22 +15,20 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: CongnitoRoleMappingsStack) {
     super(scope, id, props);
 
-    const bucket = new s3.Bucket(this, "MyBucket", {
-      versioned: true, // Enable versioning
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
-      enforceSSL: true,
-      publicReadAccess: false,
+    const listUser = new cognito.CfnUserPoolUser(this, "listPoolUser", {
+      userPoolId: props.UserPoolId,
+      username: "bob",
     });
 
-    const bucketSSM = new StringParameter(this, "bucketName", {
-      stringValue: bucket.bucketName,
-      parameterName: "/security/oauth20/rbac/bucket",
+    const writeUser = new cognito.CfnUserPoolUser(this, "writePoolUser", {
+      userPoolId: props.UserPoolId,
+      username: "sarah",
     });
 
-    const listGroup2 = new cognito.CfnUserPoolGroup(this, "listGroup2", {
+    const listGroup = new cognito.CfnUserPoolGroup(this, "listGroup", {
       userPoolId: props.UserPoolId,
       description: "description",
-      groupName: "list2",
+      groupName: "ReadOnlyUserGroup",
       precedence: 0,
       roleArn: props.ListRoleArn,
     });
@@ -41,18 +37,18 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
       this,
       "listAttachment",
       {
-        groupName: listGroup2.groupName as string,
-        username: "listuser",
+        groupName: listGroup.groupName as string,
+        username: listUser.username as string,
         userPoolId: props.UserPoolId,
       }
     );
 
-    listAttach.addDependency(listGroup2);
+    listAttach.addDependency(listGroup);
 
-    const writeGroup2 = new cognito.CfnUserPoolGroup(this, "writeGroup2", {
+    const writeGroup = new cognito.CfnUserPoolGroup(this, "writeGroup", {
       userPoolId: props.UserPoolId,
       description: "description",
-      groupName: "write2",
+      groupName: "WriteReadUserGroup",
       precedence: 0,
       roleArn: props.WriteRoleArn,
     });
@@ -61,13 +57,13 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
       this,
       "writeAttach",
       {
-        groupName: writeGroup2.groupName as string,
-        username: "writeuser",
+        groupName: writeGroup.groupName as string,
+        username: writeUser.username as string,
         userPoolId: props.UserPoolId,
       }
     );
 
-    writeAttach.addDependency(writeGroup2);
+    writeAttach.addDependency(writeGroup);
 
     const roles = new Map<string, string>([
       ["role1", props.ListRoleArn],

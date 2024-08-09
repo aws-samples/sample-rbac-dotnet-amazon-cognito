@@ -15,6 +15,7 @@ const cognitoStack: CognitoStack = new CognitoStack(
 
 const iamStack: IamStack = new IamStack(app, "rbac-demo-iam-stack", {
   IdentityPoolId: cognitoStack.IdentityPoolId,
+  SampleBucket: cognitoStack.SampleBucket,
 });
 
 new CognitoRoleMappingsStack(app, "rbac-demo-role-mappings-stack", {

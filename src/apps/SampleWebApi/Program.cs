@@ -30,8 +30,8 @@ builder.Services.AddHealthChecks();
 //Add JWT
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ReaderOnlyRole", policy => policy.RequireClaim("cognito:groups", "reader", "write2"));
-    options.AddPolicy("WriterOnlyRole", policy => policy.RequireClaim("cognito:groups", "write2"));
+    options.AddPolicy("ReaderOnlyRole", policy => policy.RequireClaim("cognito:groups", "ReadOnlyUserGroup", "WriteReadUserGroup"));
+    options.AddPolicy("WriterOnlyRole", policy => policy.RequireClaim("cognito:groups", "WriteReadUserGroup"));
 });
 builder.Services.AddAuthentication(options =>
 {
