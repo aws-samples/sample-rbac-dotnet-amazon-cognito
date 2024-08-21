@@ -7,7 +7,7 @@ using WebPage.Contracts;
 namespace WebPage.Pages.Books
 {
 
-    [Authorize(Policy = "WriterOnlyRole")]
+    [Authorize(Policy = "ReadWriteRole")]
     public class CreatePage : PageModel
     {
         private readonly ILogger<CreatePage> _logger;
