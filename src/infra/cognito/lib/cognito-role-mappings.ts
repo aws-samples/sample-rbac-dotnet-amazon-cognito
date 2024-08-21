@@ -5,8 +5,8 @@ import { CfnOutput } from "aws-cdk-lib";
 
 export interface CongnitoRoleMappingsStack extends cdk.StackProps {
   IdentityPoolId: string;
-  WriteRoleArn: string;
-  ListRoleArn: string;
+  ReadWriteRoleArn: string;
+  ReadOnlyRoleArn: string;
   UserPoolId: string;
   ClientId: string;
 }
@@ -30,7 +30,7 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
       description: "description",
       groupName: "ReadOnlyUserGroup",
       precedence: 0,
-      roleArn: props.ListRoleArn,
+      roleArn: props.ReadOnlyRoleArn,
     });
 
     const listAttach = new cognito.CfnUserPoolUserToGroupAttachment(
@@ -50,7 +50,7 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
       description: "description",
       groupName: "WriteReadUserGroup",
       precedence: 0,
-      roleArn: props.WriteRoleArn,
+      roleArn: props.ReadWriteRoleArn,
     });
 
     const writeAttach = new cognito.CfnUserPoolUserToGroupAttachment(
@@ -66,8 +66,8 @@ export class CognitoRoleMappingsStack extends cdk.Stack {
     writeAttach.addDependency(writeGroup);
 
     const roles = new Map<string, string>([
-      ["role1", props.ListRoleArn],
-      ["role2", props.WriteRoleArn],
+      ["role1", props.ReadOnlyRoleArn],
+      ["role2", props.ReadWriteRoleArn],
     ]);
 
     const cfnIdentityPoolRoleAttachment =
