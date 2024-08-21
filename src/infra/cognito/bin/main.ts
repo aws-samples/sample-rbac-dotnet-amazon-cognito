@@ -22,6 +22,6 @@ new CognitoRoleMappingsStack(app, "rbac-demo-role-mappings-stack", {
   IdentityPoolId: cognitoStack.IdentityPoolId,
   UserPoolId: cognitoStack.UserPoolId,
   ClientId: cognitoStack.ClientId,
-  ReadWriteRoleArn: iamStack.ReadWriteRoleArn,
-  ReadOnlyRoleArn: iamStack.ReadOnlyRoleArn,
+  IamReadWriteRoleArn: iamStack.ReadWriteRoleArn,
+  IamReadOnlyRoleArn: iamStack.ReadOnlyRoleArn,
 });

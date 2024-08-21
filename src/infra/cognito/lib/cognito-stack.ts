@@ -1,10 +1,11 @@
 import * as cdk from "aws-cdk-lib";
-import { Construct } from "constructs";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cognito from "aws-cdk-lib/aws-cognito";
+
+import { Construct } from "constructs";
 import { OAuthScope } from "aws-cdk-lib/aws-cognito";
 import { Stack, CfnOutput } from "aws-cdk-lib";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
-import * as s3 from "aws-cdk-lib/aws-s3";
 
 export class CognitoStack extends cdk.Stack {
   IdentityPoolId: string;
