@@ -38,8 +38,8 @@ builder.Services.AddHttpClient("BackendAPIClient", httpClient =>
 // Add Authentication and Authorization services
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ReaderOnlyRole", policy => policy.RequireClaim("cognito:groups", "ReadOnlyUserGroup", "WriteReadUserGroup"));
-    options.AddPolicy("WriterOnlyRole", policy => policy.RequireClaim("cognito:groups", "WriteReadUserGroup"));
+    options.AddPolicy("ReadOnlyRole", policy => policy.RequireClaim("cognito:groups", "read-only-group", "read-write-group"));
+    options.AddPolicy("ReadWriteRole", policy => policy.RequireClaim("cognito:groups", "read-write-group"));
 });
 
 builder.Services.AddAuthentication(options =>
@@ -62,6 +62,7 @@ builder.Services.AddAuthentication(options =>
         options.CallbackPath = "/signin-oidc";
         options.ResponseType = OpenIdConnectResponseType.Code;
         options.SignedOutCallbackPath = "/signedout-oidc";
+        options.UseTokenLifetime = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -76,25 +77,6 @@ builder.Services.AddAuthentication(options =>
 
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapRazorPages();
-
 
 //Accounts endpoints
 app.MapGet("signOut", static async (HttpContext httpContext, [FromServices] OpenIdConnectHandler idConnnect) =>
@@ -129,6 +111,24 @@ Task OnRedirectToIdentityProviderForSignOut(RedirectContext context)
     context.ProtocolMessage.IssuerAddress = $"{context.ProtocolMessage.IssuerAddress}?client_id={idConfig.ClientId}&logout_uri={logoutUrl}&redirect_uri={logoutUrl}";
     return Task.CompletedTask;
 }
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.UseHealthChecks("/healthz");
 

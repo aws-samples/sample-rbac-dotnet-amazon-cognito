@@ -13,8 +13,6 @@ using SampleWebApi.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Environment.SetEnvironmentVariable("BUCKET_NAME", "rbac-demo-role-mappings-stack-mybucketf68f3ff0-uud8wyv0vmat");
-
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -30,8 +28,8 @@ builder.Services.AddHealthChecks();
 //Add JWT
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ReaderOnlyRole", policy => policy.RequireClaim("cognito:groups", "ReadOnlyUserGroup", "WriteReadUserGroup"));
-    options.AddPolicy("WriterOnlyRole", policy => policy.RequireClaim("cognito:groups", "WriteReadUserGroup"));
+    options.AddPolicy("ReadOnlyRole", policy => policy.RequireClaim("cognito:groups", "read-only-group", "read-write-group"));
+    options.AddPolicy("ReadWriteRole", policy => policy.RequireClaim("cognito:groups", "read-write-group"));
 });
 builder.Services.AddAuthentication(options =>
 {
@@ -69,7 +67,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/GetData", [Authorize(Policy = "ReaderOnlyRole")] async Task<IResult> (
+app.MapGet("/GetData", [Authorize(Policy = "ReadOnlyRole")] async Task<IResult> (
     IDataRepository repository,
     HttpContext httpContext,
     ILogger<Program> logger) =>
@@ -108,7 +106,7 @@ app.MapGet("/GetData", [Authorize(Policy = "ReaderOnlyRole")] async Task<IResult
 .WithOpenApi();
 
 
-app.MapPost("/WriteData", [Authorize(Policy = "WriterOnlyRole")] async Task<IResult> (
+app.MapPost("/WriteData", [Authorize(Policy = "ReadWriteRole")] async Task<IResult> (
     [FromBody] Book book,
     IDataRepository repository,
     HttpContext httpContext,
