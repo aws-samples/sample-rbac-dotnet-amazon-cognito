@@ -224,3 +224,10 @@ cd src/apps/WebPage
 dotnet build
 dotnet watch
 ```
+
+## Code placeholder 11: Cleanup
+
+```bash
+cd src/infra/cognito
+cdk destroy --all
+```
